@@ -32,6 +32,20 @@ fn main() -> Result<(), io::Error> {
         let entries = get_entries(&mut current_directory);
     }
 }
+
+//get the entries in the directory, i got this from chatgpt dont know how to explain it
 fn get_entries(path: &PathBuf) -> Vec<String> {
     fs::read_dir(path)
+        .unwrap_or_else(|_| fs::read_dir(".").unwrap()) // fallback to current dir if error
+        .filter_map(Result::ok) // skip unreadable entries
+        .map(|entry| {
+            let path = entry.path();
+            if path.is_dir() {
+                // Append "/" to directories
+                format!("{}/", path.file_name().unwrap().to_string_lossy())
+            } else {
+                path.file_name().unwrap().to_string_lossy().to_string()
+            }
+        })
+        .collect()
 }
