@@ -20,7 +20,14 @@ fn main() -> Result<(), io::Error> {
     let backend = CrosstermBackend::new(stdout);
     let terminal = Terminal::new(backend)?;
 
+    //start in current dir
     let mut current_directory = std::env::current_dir()?;
+    // index of curretn selected file
     let mut selected_file = 0;
+
+    while true {
+        let entries = get_entries(&mut current_directory);
+    }
     Ok(())
 }
+fn get_entries(path: &PathBuf) -> String {}
