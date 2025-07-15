@@ -1,8 +1,10 @@
+//for handling the terminal with user input
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+// for the ui components
 use ratatui::{
     Terminal,
     backend::CrosstermBackend,
@@ -10,7 +12,8 @@ use ratatui::{
     style::{Color, Style},
     widgets::{Block, Borders, List, ListItem},
 };
-use std::io;
+//for getting the data from the file system
+use std::{fs, io, path::PathBuf};
 
 fn main() -> Result<(), io::Error> {
     println!("testing");
@@ -25,9 +28,10 @@ fn main() -> Result<(), io::Error> {
     // index of curretn selected file
     let mut selected_file = 0;
 
-    while true {
+    loop {
         let entries = get_entries(&mut current_directory);
     }
-    Ok(())
 }
-fn get_entries(path: &PathBuf) -> String {}
+fn get_entries(path: &PathBuf) -> Vec<String> {
+    fs::read_dir(path)
+}
