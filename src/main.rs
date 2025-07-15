@@ -30,10 +30,12 @@ fn main() -> Result<(), io::Error> {
 
     loop {
         let entries = get_entries(&mut current_directory);
+        // draw the ui components
     }
 }
 
-//get the entries in the directory, i got this from chatgpt dont know how to explain it
+//get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
+// if the entry is a directory append "/" to it
 fn get_entries(path: &PathBuf) -> Vec<String> {
     fs::read_dir(path)
         .unwrap_or_else(|_| fs::read_dir(".").unwrap()) // fallback to current dir if error
