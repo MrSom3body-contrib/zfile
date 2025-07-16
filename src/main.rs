@@ -58,6 +58,24 @@ fn main() -> Result<(), io::Error> {
                 &mut ratatui::widgets::ListState::default().with_selected(Some(_selected_file)),
             );
         })?;
+        if event::poll(std::time::Duration::from_millis(100))? {
+            if let Event::Key(key) = event::read()? {
+                match key.code {
+                    KeyCode::Char('q') => break,
+                    KeyCode::Char('j') => {
+                        if _selected_file < get_entries(&current_directory).len().saturating_sub(1)
+                        {
+                            _selected_file += 1;
+                        }
+                    }
+                    KeyCode::Char('k') => {
+                        if _selected_file > 0 {
+                            _selected_file -= 1;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
