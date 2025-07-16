@@ -19,7 +19,8 @@ fn main() -> Result<(), io::Error> {
     println!("testing");
     //declaring
     enable_raw_mode()?;
-    let stdout = io::stdout();
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -28,6 +29,8 @@ fn main() -> Result<(), io::Error> {
     // index of curretn selected file
     let _selected_file = 0;
 
+    //having a bug becuase the terminal is not clearing the screen before drawing and so it
+    //conflichts with ui
     loop {
         let entries = get_entries(&mut current_directory);
 
