@@ -46,7 +46,7 @@ fn main() -> Result<(), io::Error> {
                 .collect();
 
             let ui_list = List::new(items)
-                .block(Block::default().title("Files").borders(Borders::ALL))
+                .block(Block::default().title("zfile").borders(Borders::ALL))
                 .highlight_style(
                     Style::default()
                         // 2025 is the year for cyan xd
@@ -71,6 +71,16 @@ fn main() -> Result<(), io::Error> {
                         if selected_file > 0 {
                             selected_file -= 1;
                         }
+                    }
+                    KeyCode::Char('h') => {
+                        current_directory.pop();
+                        selected_file = 0;
+                    }
+                    KeyCode::Char('l') => {
+                        //only works for directories
+                        //when its a file it will go back to the original directory
+                        current_directory.push(entries[selected_file].clone());
+                        selected_file = 1;
                     }
                     _ => {}
                 }
