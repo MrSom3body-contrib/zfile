@@ -84,6 +84,8 @@ fn main() -> Result<(), io::Error> {
                             current_directory.push(entries[selected_file].clone());
                             selected_file = 1;
                         } else if current_directory.is_file() {
+                            //its a error when trying to open the file (maybe because its trying to
+                            //open the parent directory of the file)
                             file_helper(&current_directory)?;
                         }
                     }
@@ -117,6 +119,7 @@ fn get_entries(path: &PathBuf) -> Vec<String> {
         .collect()
 }
 use std::process::{Command, Stdio};
+#[allow(unused)]
 fn file_helper(path: &PathBuf) -> io::Result<()> {
     //exit raw mode to make nvim visible
     disable_raw_mode()?;
