@@ -30,7 +30,7 @@ fn main() -> Result<(), io::Error> {
     //start in current dir
     let mut current_directory = std::env::current_dir()?;
     // index of curretn selected file
-    let _selected_file = 0;
+    let mut selected_file = 0;
 
     //having a bug becuase the terminal is not clearing the screen before drawing and so it
     //conflichts with ui
@@ -55,7 +55,7 @@ fn main() -> Result<(), io::Error> {
             f.render_stateful_widget(
                 ui_list,
                 f.area(),
-                &mut ratatui::widgets::ListState::default().with_selected(Some(_selected_file)),
+                &mut ratatui::widgets::ListState::default().with_selected(Some(selected_file)),
             );
         })?;
         if event::poll(std::time::Duration::from_millis(100))? {
@@ -63,16 +63,16 @@ fn main() -> Result<(), io::Error> {
                 match key.code {
                     KeyCode::Char('q') => break,
                     KeyCode::Char('j') => {
-                        if _selected_file < get_entries(&current_directory).len().saturating_sub(1)
-                        {
-                            _selected_file += 1;
+                        if selected_file < get_entries(&current_directory).len().saturating_sub(1) {
+                            selected_file += 1;
                         }
                     }
                     KeyCode::Char('k') => {
-                        if _selected_file > 0 {
-                            _selected_file -= 1;
+                        if selected_file > 0 {
+                            selected_file -= 1;
                         }
                     }
+                    _ => {}
                 }
             }
         }
