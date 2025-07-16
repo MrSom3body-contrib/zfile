@@ -9,7 +9,20 @@ A simple file manager written in Rust. The aim of zfile is to be dead simple but
 - preview file
 - rename, delete, copy, move
 - sort by name, size, date
-- maybe preview git branch history
+- git branch history
+- picture preview
+
+## Installation
+
+Its not finished yet so youe need to compile it yourself.
+
+```bash
+cargo build --release
+```
+
+```bash
+./target/release/zfile
+```
 
 ## License
 
