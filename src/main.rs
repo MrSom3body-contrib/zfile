@@ -31,7 +31,11 @@ fn main() -> Result<(), io::Error> {
     loop {
         let entries = get_entries(&mut current_directory);
         // draw the ui components
-    }
+        // declaring each item
+        let items : Vec<ListItem> = entries.iter().map(|entry|ListItem::new(entry.as_str())).collect();
+
+        // 
+    
 }
 
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
