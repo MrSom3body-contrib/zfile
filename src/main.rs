@@ -21,7 +21,7 @@ fn main() -> Result<(), io::Error> {
     enable_raw_mode()?;
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
-    let terminal = Terminal::new(backend)?;
+    let mut terminal = Terminal::new(backend)?;
 
     //start in current dir
     let mut current_directory = std::env::current_dir()?;
@@ -44,11 +44,12 @@ fn main() -> Result<(), io::Error> {
                     // 2025 is the year for cyan xd
                     .fg(Color::Cyan),
             );
+        #[allow(unused_must_use)]
         terminal.draw(|f| {
             f.render_stateful_widget(
-                list,
-                size,
-                &mut ratatui::widgets::ListState::default().with_selected(Some(selected)),
+                ui_list,
+                f.area(),
+                &mut ratatui::widgets::ListState::default().with_selected(Some(_selected_file)),
             );
         });
     }
