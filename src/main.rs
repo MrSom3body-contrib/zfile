@@ -34,9 +34,14 @@ fn main() -> Result<(), io::Error> {
         // declaring each item
         let items : Vec<ListItem> = entries.iter().map(|entry|ListItem::new(entry.as_str())).collect();
 
-        // 
+        let ui_list = List::new(items)
+            .block(Block::default()
+            .title("Files")
+            .borders(Borders::ALL))
+            .highlight_style(Style::default()
+            .fg(Color::Yellow));
     
-}
+    }
 
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
 // if the entry is a directory append "/" to it
