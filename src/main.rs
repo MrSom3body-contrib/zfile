@@ -79,8 +79,13 @@ fn main() -> Result<(), io::Error> {
                     KeyCode::Char('l') => {
                         //only works for directories
                         //when its a file it will go back to the original directory
-                        current_directory.push(entries[selected_file].clone());
-                        selected_file = 1;
+
+                        if current_directory.is_dir() {
+                            current_directory.push(entries[selected_file].clone());
+                            selected_file = 1;
+                        } else if current_directory.is_file() {
+                            file_helper(&current_directory)?;
+                        }
                     }
                     _ => {}
                 }
@@ -110,4 +115,20 @@ fn get_entries(path: &PathBuf) -> Vec<String> {
             }
         })
         .collect()
+}
+use std::process::{Command, Stdio};
+fn file_helper(path: &PathBuf) -> io::Result<()> {
+    //exit raw mode to make nvim visible
+    disable_raw_mode()?;
+    execute!(io::stdout(), LeaveAlternateScreen)?;
+
+    Command::new("nvim")
+        .arg(path)
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .status()?; // Waits for nvim to exit;
+    execute!(io::stdout(), EnterAlternateScreen,);
+    enable_raw_mode()?;
+    Ok(())
 }
