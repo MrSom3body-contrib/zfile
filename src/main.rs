@@ -19,31 +19,40 @@ fn main() -> Result<(), io::Error> {
     println!("testing");
     //declaring
     enable_raw_mode()?;
-    let mut stdout = io::stdout();
+    let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
     let terminal = Terminal::new(backend)?;
 
     //start in current dir
     let mut current_directory = std::env::current_dir()?;
     // index of curretn selected file
-    let mut selected_file = 0;
+    let _selected_file = 0;
 
     loop {
         let entries = get_entries(&mut current_directory);
         // draw the ui components
         // declaring each item
-        let items : Vec<ListItem> = entries.iter().map(|entry|ListItem::new(entry.as_str())).collect();
+        let items: Vec<ListItem> = entries
+            .iter()
+            .map(|entry| ListItem::new(entry.as_str()))
+            .collect();
 
         let ui_list = List::new(items)
-            .block(Block::default()
-            .title("Files")
-            .borders(Borders::ALL))
-            .highlight_style(Style::default()
-                // 2025 is the year for cyan xd
-            .fg(Color::Cyan));
-    
+            .block(Block::default().title("Files").borders(Borders::ALL))
+            .highlight_style(
+                Style::default()
+                    // 2025 is the year for cyan xd
+                    .fg(Color::Cyan),
+            );
+        terminal.draw(|f| {
+            f.render_stateful_widget(
+                list,
+                size,
+                &mut ratatui::widgets::ListState::default().with_selected(Some(selected)),
+            );
+        });
     }
-
+}
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
 // if the entry is a directory append "/" to it
 fn get_entries(path: &PathBuf) -> Vec<String> {
