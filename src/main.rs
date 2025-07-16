@@ -30,28 +30,28 @@ fn main() -> Result<(), io::Error> {
 
     loop {
         let entries = get_entries(&mut current_directory);
-        // draw the ui components
-        // declaring each item
-        let items: Vec<ListItem> = entries
-            .iter()
-            .map(|entry| ListItem::new(entry.as_str()))
-            .collect();
 
-        let ui_list = List::new(items)
-            .block(Block::default().title("Files").borders(Borders::ALL))
-            .highlight_style(
-                Style::default()
-                    // 2025 is the year for cyan xd
-                    .fg(Color::Cyan),
-            );
-        #[allow(unused_must_use)]
         terminal.draw(|f| {
+            // draw the ui components
+            // declaring each item
+            let items: Vec<ListItem> = entries
+                .iter()
+                .map(|entry| ListItem::new(entry.as_str()))
+                .collect();
+
+            let ui_list = List::new(items)
+                .block(Block::default().title("Files").borders(Borders::ALL))
+                .highlight_style(
+                    Style::default()
+                        // 2025 is the year for cyan xd
+                        .fg(Color::Cyan),
+                );
             f.render_stateful_widget(
                 ui_list,
                 f.area(),
                 &mut ratatui::widgets::ListState::default().with_selected(Some(_selected_file)),
             );
-        });
+        })?;
     }
 }
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
