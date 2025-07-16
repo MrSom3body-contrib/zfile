@@ -77,6 +77,12 @@ fn main() -> Result<(), io::Error> {
             }
         }
     }
+    //cleaning up so the terminal can be used again
+    disable_raw_mode()?;
+    //leaving the alternate screen
+    execute!(io::stdout(), LeaveAlternateScreen)?;
+    //return statement
+    Ok(())
 }
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
 // if the entry is a directory append "/" to it
