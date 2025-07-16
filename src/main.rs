@@ -19,9 +19,12 @@ fn main() -> Result<(), io::Error> {
     println!("testing");
     //declaring
     enable_raw_mode()?;
+    //declaring th standard output
     let mut stdout = io::stdout();
+    //clearing the terminal and entrering a alternate screen
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
+    //declaring the terminal
     let mut terminal = Terminal::new(backend)?;
 
     //start in current dir
