@@ -1,6 +1,6 @@
 # zfile
 
-A simple file manager written in Rust.
+A simple file manager written in Rust. The aim of zfile is to be dead simple but powerful because of the use of my own motions that helps navigating fastly through the file system.
 
 ## Goals
 
