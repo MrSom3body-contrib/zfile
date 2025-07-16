@@ -39,7 +39,8 @@ fn main() -> Result<(), io::Error> {
             .title("Files")
             .borders(Borders::ALL))
             .highlight_style(Style::default()
-            .fg(Color::Yellow));
+                // 2025 is the year for cyan xd
+            .fg(Color::Cyan));
     
     }
 
