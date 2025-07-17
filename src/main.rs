@@ -136,13 +136,15 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
         .stderr(Stdio::inherit())
         .status()?; // Waits for nvim to exit;
 
-    // Get the folder that contains the file
-
+    //declaring a var that stores the new directory that we are goint to open when closing nvim
+    //ISSUE: idk how to wrap the var that it stores the right type of data
     let new_dir = path
         .parent()
+        //wth
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."));
     // Re-enter TUI
+    // this works better than recursion because its faster and memory efficient.
     enable_raw_mode()?;
     execute!(io::stdout(), EnterAlternateScreen)?;
     Ok(new_dir)
