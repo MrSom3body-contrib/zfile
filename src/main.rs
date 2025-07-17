@@ -91,9 +91,12 @@ fn main() -> Result<(), io::Error> {
                                 current_directory = pointer_to_file.clone();
                                 selected_file = 0;
                             } else if pointer_to_file.is_file() {
+                                if let Ok(new_dir) = file_helper(&pointer_to_file) {
+                                    current_directory = new_dir;
+                                    selected_file = 0;
+                                }
                                 //its a error when trying to open the file (maybe because its trying to
                                 //open the parent directory of the file)
-                                file_helper(&pointer_to_file)?;
                             }
                         }
                     }
@@ -121,8 +124,8 @@ fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
 }
 
 #[allow(unused)]
-fn file_helper(path: &PathBuf) -> io::Result<(PathBuf)> {
-    //exit raw mode to make nvim visible
+
+fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen)?;
 
@@ -132,15 +135,15 @@ fn file_helper(path: &PathBuf) -> io::Result<(PathBuf)> {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .status()?; // Waits for nvim to exit;
-    // after exiting nvim, the terminal should go back but there is a bug
-    // ISSUE: termninal not reloading after exiting nvim but if we navigate the
-    // text appears again
-    enable_raw_mode()?;
-    execute!(io::stdout(), EnterAlternateScreen)?;
+
+    // Get the folder that contains the file
+
     let new_dir = path
         .parent()
-        .unwrap_or_else(|| PathBuf::from(".").as_path())
-        .to_path_buf();
-
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| PathBuf::from("."));
+    // Re-enter TUI
+    enable_raw_mode()?;
+    execute!(io::stdout(), EnterAlternateScreen)?;
     Ok(new_dir)
 }
