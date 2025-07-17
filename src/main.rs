@@ -4,6 +4,7 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use std::process::{Command, Stdio};
 // for the ui components
 use ratatui::{
     Terminal,
@@ -18,11 +19,13 @@ use std::{fs, io, path::PathBuf};
 fn main() -> Result<(), io::Error> {
     println!("testing");
     //declaring
-    enable_raw_mode()?;
+    //for debugging
+    //enable_raw_mode()?;
     //declaring th standard output
     let mut stdout = io::stdout();
     //clearing the terminal and entrering a alternate screen
-    execute!(stdout, EnterAlternateScreen)?;
+    //for debugging
+    //execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     //declaring the terminal
     let mut terminal = Terminal::new(backend)?;
@@ -42,9 +45,16 @@ fn main() -> Result<(), io::Error> {
             // declaring each item
             let items: Vec<ListItem> = entries
                 .iter()
-                .map(|entry| ListItem::new(entry.as_str()))
+                .map(|entry| {
+                    let name = entry.file_name().unwrap_or_default().to_string_lossy();
+                    let display_name = if entry.is_dir() {
+                        format!("{}/", name)
+                    } else {
+                        name.to_string()
+                    };
+                    ListItem::new(display_name)
+                })
                 .collect();
-
             let ui_list = List::new(items)
                 .block(Block::default().title("zfile").borders(Borders::ALL))
                 .highlight_style(
@@ -80,15 +90,13 @@ fn main() -> Result<(), io::Error> {
                         //only works for directories
                         //when its a file it will go back to the original directory
                         if let Some(pointer_to_file) = entries.get(selected_file) {
-                            let mut opened_file = current_directory.clone();
-                            opened_file.push(pointer_to_file.trim_end_matches('/'));
-
-                            if opened_file.is_dir() {
-                                current_directory = opened_file;
+                            if pointer_to_file.is_dir() {
+                                current_directory = pointer_to_file.clone();
                                 selected_file = 0;
-                            } else if opened_file.is_file() {
+                            } else if pointer_to_file.is_file() {
                                 //its a error when trying to open the file (maybe because its trying to
                                 //open the parent directory of the file)
+                                println!("Trying to open: {}", pointer_to_file.display());
                                 file_helper(&current_directory)?;
                             }
                         }
@@ -107,22 +115,15 @@ fn main() -> Result<(), io::Error> {
 }
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
 // if the entry is a directory append "/" to it
-fn get_entries(path: &PathBuf) -> Vec<String> {
+
+fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
     fs::read_dir(path)
-        .unwrap_or_else(|_| fs::read_dir(".").unwrap()) // fallback to current dir if error
-        .filter_map(Result::ok) // skip unreadable entries
-        .map(|entry| {
-            let path = entry.path();
-            if path.is_dir() {
-                // Append "/" to directories
-                format!("{}/", path.file_name().unwrap().to_string_lossy())
-            } else {
-                path.file_name().unwrap().to_string_lossy().to_string()
-            }
-        })
+        .unwrap_or_else(|_| fs::read_dir(".").unwrap())
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
         .collect()
 }
-use std::process::{Command, Stdio};
+
 #[allow(unused)]
 fn file_helper(path: &PathBuf) -> io::Result<()> {
     //exit raw mode to make nvim visible
@@ -135,7 +136,7 @@ fn file_helper(path: &PathBuf) -> io::Result<()> {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .status()?; // Waits for nvim to exit;
-    execute!(io::stdout(), EnterAlternateScreen,);
     enable_raw_mode()?;
+    execute!(io::stdout(), EnterAlternateScreen)?;
     Ok(())
 }
