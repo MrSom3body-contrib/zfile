@@ -79,14 +79,18 @@ fn main() -> Result<(), io::Error> {
                     KeyCode::Char('l') => {
                         //only works for directories
                         //when its a file it will go back to the original directory
+                        if let Some(pointer_to_file) = entries.get(selected_file) {
+                            let mut opened_file = current_directory.clone();
+                            opened_file.push(pointer_to_file.trim_end_matches('/'));
 
-                        if current_directory.is_dir() {
-                            current_directory.push(entries[selected_file].clone());
-                            selected_file = 1;
-                        } else if current_directory.is_file() {
-                            //its a error when trying to open the file (maybe because its trying to
-                            //open the parent directory of the file)
-                            file_helper(&current_directory)?;
+                            if current_directory.is_dir() {
+                                current_directory.push(entries[selected_file].clone());
+                                selected_file = 1;
+                            } else if current_directory.is_file() {
+                                //its a error when trying to open the file (maybe because its trying to
+                                //open the parent directory of the file)
+                                file_helper(&current_directory)?;
+                            }
                         }
                     }
                     _ => {}
