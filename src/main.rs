@@ -9,7 +9,6 @@ use std::process::{Command, Stdio};
 use ratatui::{
     Terminal,
     backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
     style::{Color, Style},
     widgets::{Block, Borders, List, ListItem},
 };
@@ -20,12 +19,12 @@ fn main() -> Result<(), io::Error> {
     println!("testing");
     //declaring
     //for debugging
-    //enable_raw_mode()?;
+    enable_raw_mode()?;
     //declaring th standard output
     let mut stdout = io::stdout();
     //clearing the terminal and entrering a alternate screen
     //for debugging
-    //execute!(stdout, EnterAlternateScreen)?;
+    execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     //declaring the terminal
     let mut terminal = Terminal::new(backend)?;
@@ -91,13 +90,14 @@ fn main() -> Result<(), io::Error> {
                         //when its a file it will go back to the original directory
                         if let Some(pointer_to_file) = entries.get(selected_file) {
                             if pointer_to_file.is_dir() {
+                                println!("Trying to open: {}", pointer_to_file.display());
                                 current_directory = pointer_to_file.clone();
                                 selected_file = 0;
                             } else if pointer_to_file.is_file() {
                                 //its a error when trying to open the file (maybe because its trying to
                                 //open the parent directory of the file)
                                 println!("Trying to open: {}", pointer_to_file.display());
-                                file_helper(&current_directory)?;
+                                file_helper(&pointer_to_file)?;
                             }
                         }
                     }
