@@ -86,8 +86,6 @@ fn main() -> Result<(), io::Error> {
                         selected_file = 0;
                     }
                     KeyCode::Char('l') => {
-                        //only works for directories
-                        //when its a file it will go back to the original directory
                         if let Some(pointer_to_file) = entries.get(selected_file) {
                             if pointer_to_file.is_dir() {
                                 println!("Trying to open: {}", pointer_to_file.display());
@@ -136,6 +134,9 @@ fn file_helper(path: &PathBuf) -> io::Result<()> {
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .status()?; // Waits for nvim to exit;
+    // after exiting nvim, the terminal should go back but there is a bug
+    // ISSUE: termninal not reloading after exiting nvim but if we navigate the
+    // text appears again
     enable_raw_mode()?;
     execute!(io::stdout(), EnterAlternateScreen)?;
     Ok(())
