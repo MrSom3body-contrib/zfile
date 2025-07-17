@@ -124,6 +124,7 @@ fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
         .collect()
 }
 
+//helper function for openining files with nvim and when closing nvim it returns to the parent directory
 #[allow(unused)]
 fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     disable_raw_mode()?;
@@ -138,7 +139,6 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
 
     let new_dir = path
         .parent()
-        //wth
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."));
     // Re-enter TUI
