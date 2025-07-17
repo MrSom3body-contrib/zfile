@@ -88,13 +88,11 @@ fn main() -> Result<(), io::Error> {
                     KeyCode::Char('l') => {
                         if let Some(pointer_to_file) = entries.get(selected_file) {
                             if pointer_to_file.is_dir() {
-                                println!("Trying to open: {}", pointer_to_file.display());
                                 current_directory = pointer_to_file.clone();
                                 selected_file = 0;
                             } else if pointer_to_file.is_file() {
                                 //its a error when trying to open the file (maybe because its trying to
                                 //open the parent directory of the file)
-                                println!("Trying to open: {}", pointer_to_file.display());
                                 file_helper(&pointer_to_file)?;
                             }
                         }
@@ -123,7 +121,7 @@ fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
 }
 
 #[allow(unused)]
-fn file_helper(path: &PathBuf) -> io::Result<()> {
+fn file_helper(path: &PathBuf) -> io::Result<(PathBuf)> {
     //exit raw mode to make nvim visible
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen)?;
@@ -139,5 +137,10 @@ fn file_helper(path: &PathBuf) -> io::Result<()> {
     // text appears again
     enable_raw_mode()?;
     execute!(io::stdout(), EnterAlternateScreen)?;
-    Ok(())
+    let new_dir = path
+        .parent()
+        .unwrap_or_else(|| PathBuf::from(".").as_path())
+        .to_path_buf();
+
+    Ok(new_dir)
 }
