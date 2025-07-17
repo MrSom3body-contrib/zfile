@@ -4,6 +4,7 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use std::path::Path;
 use std::process::{Command, Stdio};
 // for the ui components
 use ratatui::{
@@ -124,7 +125,6 @@ fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
 }
 
 #[allow(unused)]
-
 fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen)?;
@@ -136,8 +136,6 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
         .stderr(Stdio::inherit())
         .status()?; // Waits for nvim to exit;
 
-    //declaring a var that stores the new directory that we are goint to open when closing nvim
-    //ISSUE: idk how to wrap the var that it stores the right type of data
     let new_dir = path
         .parent()
         //wth
