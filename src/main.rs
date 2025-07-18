@@ -143,10 +143,10 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     // this works better than recursion because its faster and memory efficient.
     //enable_raw_mode()?;
     //execute!(io::stdout(), EnterAlternateScreen)?;
-    // ISSUE: after exiting the program doesnt draw the full ui again
+    //-----------------------
     // recursion doesnt send the issue
-    if Command::new("nvim").status() == Result::Ok() {
-        main()?;
-    }
+    // ISSUE: when i exit nvim and exit the program, i can still write in the terminal and dont
+    // get sent back to the terminal
+    main();
     Ok(new_dir)
 }
