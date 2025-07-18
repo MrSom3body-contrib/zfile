@@ -96,8 +96,6 @@ fn main() -> Result<(), io::Error> {
                                     current_directory = new_dir;
                                     selected_file = 0;
                                 }
-                                //its a error when trying to open the file (maybe because its trying to
-                                //open the parent directory of the file)
                             }
                         }
                     }
