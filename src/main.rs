@@ -111,7 +111,6 @@ fn main() -> Result<(), io::Error> {
 }
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
 // if the entry is a directory append "/" to it
-
 fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
     fs::read_dir(path)
         .unwrap_or_else(|_| fs::read_dir(".").unwrap())
@@ -147,4 +146,9 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     // get sent back to the terminal
     main();
     Ok(new_dir)
+}
+#[allow(unused)]
+fn exit_helper() {
+    disable_raw_mode();
+    execute!(io::stdout(), LeaveAlternateScreen);
 }
