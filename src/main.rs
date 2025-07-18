@@ -145,6 +145,8 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     //execute!(io::stdout(), EnterAlternateScreen)?;
     // ISSUE: after exiting the program doesnt draw the full ui again
     // recursion doesnt send the issue
-    main()?;
+    if Command::new("nvim").status() == Result::Ok() {
+        main()?;
+    }
     Ok(new_dir)
 }
