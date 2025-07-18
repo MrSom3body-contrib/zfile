@@ -144,11 +144,5 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     // recursion doesnt send the issue
     // ISSUE: when i exit nvim and exit the program, i can still write in the terminal and dont
     // get sent back to the terminal
-    main();
     Ok(new_dir)
-}
-#[allow(unused)]
-fn exit_helper() {
-    disable_raw_mode();
-    execute!(io::stdout(), LeaveAlternateScreen);
 }
