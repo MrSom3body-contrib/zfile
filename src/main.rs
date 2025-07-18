@@ -139,10 +139,12 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     // Re-enter TUI
     // this works better than recursion because its faster and memory efficient.
     //enable_raw_mode()?;
-    //execute!(io::stdout(), EnterAlternateScreen)?;
+    //execute!(io::sdout(), EnterAlternateScreen)?;
     //-----------------------
     // recursion doesnt send the issue
     // ISSUE: when i exit nvim and exit the program, i can still write in the terminal and dont
     // get sent back to the terminal
+    // TODO: fix this
+    main()?; // this is the issue but with the option above it doesnt work too
     Ok(new_dir)
 }
