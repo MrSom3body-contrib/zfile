@@ -141,7 +141,10 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
         .unwrap_or_else(|| PathBuf::from("."));
     // Re-enter TUI
     // this works better than recursion because its faster and memory efficient.
-    enable_raw_mode()?;
-    execute!(io::stdout(), EnterAlternateScreen)?;
+    //enable_raw_mode()?;
+    //execute!(io::stdout(), EnterAlternateScreen)?;
+    // ISSUE: after exiting the program doesnt draw the full ui again
+    // recursion doesnt send the issue
+    main()?;
     Ok(new_dir)
 }
