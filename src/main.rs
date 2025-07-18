@@ -17,9 +17,7 @@ use ratatui::{
 use std::{fs, io, path::PathBuf};
 
 fn main() -> Result<(), io::Error> {
-    println!("testing");
-    //declaring
-    //for debugging
+    //enabling raw mode
     enable_raw_mode()?;
     //declaring th standard output
     let mut stdout = io::stdout();
