@@ -121,9 +121,7 @@ fn main() -> Result<(), io::Error> {
                             }
                         }
                     }
-                    KeyCode::Char('v') => {
-                        //PREVIEW FILE HOTKEY
-                    }
+                    //dont need a hotkey for showing preview im gonna do it that it shows intantly
                     _ => {}
                 }
             }
