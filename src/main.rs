@@ -120,7 +120,7 @@ fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
         .collect()
 }
 
-//helper function for openining files with nvim and when closing nvim it returns to the parent directory
+//helper function for opening files with nvim and when closing nvim it returns to the parent directory
 #[allow(unused)]
 fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
     disable_raw_mode()?;

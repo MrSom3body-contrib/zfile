@@ -4,8 +4,8 @@ A simple file manager written in Rust. The aim of zfile is to be dead simple but
 
 ## Goals
 
-- ---opening files with nvim---
-- using own motions to navigate
+- ~~opening files with nvim~~
+- ~~using own motions to navigate (j, k, h, l)~~
 - fuzzy finder
 - preview file
 - rename, delete, copy, move
@@ -15,7 +15,7 @@ A simple file manager written in Rust. The aim of zfile is to be dead simple but
 
 ## Installation
 
-Its not finished yet so youe need to compile it yourself.
+Its not finished yet so you need to compile it yourself.
 
 ```bash
 cargo build --release
