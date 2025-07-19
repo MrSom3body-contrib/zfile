@@ -17,11 +17,7 @@ use ratatui::{
 //for getting the data from the file system
 use std::{fs, io, path::PathBuf};
 
-fn main() {
-    let dir: Path = std::env::current_dir();
-    zfile(dir);
-}
-fn zfile(dir: std::path::PathBuf) -> Result<(), io::Error> {
+fn main() -> Result<(), io::Error> {
     //enabling raw mode
     enable_raw_mode()?;
     //declaring th standard output
@@ -164,7 +160,7 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
         .stderr(Stdio::inherit())
         .status()?; // Waits for nvim to exit;
 
-    let current_directory = path
+    let new_dir = path
         .parent()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."));
@@ -172,5 +168,5 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
 
     //i know its not the best solution but it works
     main()?;
-    Ok(current_directory)
+    Ok(new_dir)
 }
