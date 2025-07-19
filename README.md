@@ -5,9 +5,9 @@ A simple file manager written in Rust. The aim of zfile is to be dead simple but
 ## Goals
 
 - ~~opening files with nvim~~
-- ~~using own motions to navigate (j, k, h, l)~~
+- ~~using own motions to navigate (j, k, h, l), (J,K)~~
 - fuzzy finder
-- preview file
+- ~~preview file~~ but not optimized yet (large files)
 - rename, delete, copy, move
 - sort by name, size, date
 - git branch history
