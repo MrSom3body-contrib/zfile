@@ -10,13 +10,18 @@ use std::process::{Command, Stdio};
 use ratatui::{
     Terminal,
     backend::CrosstermBackend,
+    layout::{Constraint, Direction, Layout},
     style::{Color, Style},
     widgets::{Block, Borders, List, ListItem},
 };
 //for getting the data from the file system
 use std::{fs, io, path::PathBuf};
 
-fn main() -> Result<(), io::Error> {
+fn main() {
+    let dir: Path = std::env::current_dir();
+    zfile(dir);
+}
+fn zfile(dir: std::path::PathBuf) -> Result<(), io::Error> {
     //enabling raw mode
     enable_raw_mode()?;
     //declaring th standard output
@@ -39,7 +44,10 @@ fn main() -> Result<(), io::Error> {
         let entries = get_entries(&mut current_directory);
 
         terminal.draw(|f| {
-            // draw the ui components
+            let display_split = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
+                .split(f.area()); // draw the ui components
             // declaring each item
             let items: Vec<ListItem> = entries
                 .iter()
@@ -60,11 +68,27 @@ fn main() -> Result<(), io::Error> {
                         // 2025 is the year for cyan xd
                         .fg(Color::Cyan),
                 );
-            f.render_stateful_widget(
-                ui_list,
-                f.area(),
-                &mut ratatui::widgets::ListState::default().with_selected(Some(selected_file)),
-            );
+
+            let mut list_state = ratatui::widgets::ListState::default();
+            list_state.select(Some(selected_file));
+            f.render_stateful_widget(ui_list, display_split[0], &mut list_state);
+
+            let preview_content = if let Some(entry) = entries.get(selected_file) {
+                if entry.is_file() {
+                    fs::read_to_string(entry)
+                        .unwrap_or_else(|_| "[Could not read file]".to_string())
+                } else {
+                    "".to_string()
+                }
+            } else {
+                "".to_string()
+            };
+
+            let preview = ratatui::widgets::Paragraph::new(preview_content)
+                .block(Block::default().title("Preview").borders(Borders::ALL))
+                .wrap(ratatui::widgets::Wrap { trim: true });
+
+            f.render_widget(preview, display_split[1]);
         })?;
         if event::poll(std::time::Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
@@ -140,7 +164,7 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
         .stderr(Stdio::inherit())
         .status()?; // Waits for nvim to exit;
 
-    let new_dir = path
+    let current_directory = path
         .parent()
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."));
@@ -148,5 +172,5 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
 
     //i know its not the best solution but it works
     main()?;
-    Ok(new_dir)
+    Ok(current_directory)
 }
