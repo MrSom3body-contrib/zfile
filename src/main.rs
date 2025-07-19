@@ -71,20 +71,24 @@ fn main() -> Result<(), io::Error> {
                 match key.code {
                     KeyCode::Char('q') => break,
                     KeyCode::Char('j') => {
+                        //OPENING NEXT FILE/DIR HOTKEY
                         if selected_file < get_entries(&current_directory).len().saturating_sub(1) {
                             selected_file += 1;
                         }
                     }
                     KeyCode::Char('k') => {
+                        //GOING DOWN HOTKEY
                         if selected_file > 0 {
                             selected_file -= 1;
                         }
                     }
                     KeyCode::Char('h') => {
+                        //GOING UP HOTKEY
                         current_directory.pop();
                         selected_file = 0;
                     }
                     KeyCode::Char('l') => {
+                        //PARENT DIRECTORY HOTKEY
                         if let Some(pointer_to_file) = entries.get(selected_file) {
                             if pointer_to_file.is_dir() {
                                 current_directory = pointer_to_file.clone();
@@ -96,6 +100,9 @@ fn main() -> Result<(), io::Error> {
                                 }
                             }
                         }
+                    }
+                    KeyCode::Char('v') => {
+                        //PREVIEW FILE HOTKEY
                     }
                     _ => {}
                 }
