@@ -126,6 +126,12 @@ fn main() -> Result<(), io::Error> {
                             selected_file = get_entries(&current_directory).len().saturating_sub(1);
                         }
                     }
+                    KeyCode::Char('K') => {
+                        if selected_file <= get_entries(&current_directory).len().saturating_sub(1)
+                        {
+                            selected_file = 0;
+                        }
+                    }
                     //dont need a hotkey for showing preview im gonna do it that it shows intantly
                     _ => {}
                 }
