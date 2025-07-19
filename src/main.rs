@@ -107,7 +107,7 @@ fn main() -> Result<(), io::Error> {
     //leaving the alternate screen
     execute!(io::stdout(), LeaveAlternateScreen)?;
     //return statement
-
+    //Solution to the issue when exiting nvim and exiting the program
     std::process::exit(0);
 }
 //get the entries in the directory and returns it as a string, i got this from chatgpt dont know how to explain it
@@ -139,13 +139,9 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
         .unwrap_or_else(|| PathBuf::from("."));
     // Re-enter TUI
     // this works better than recursion because its faster and memory efficient.
-    //enable_raw_mode()?;
-    //execute!(io::sdout(), EnterAlternateScreen)?;
-    //-----------------------
-    // recursion doesnt send the issue
-    // ISSUE: when i exit nvim and exit the program, i can still write in the terminal and dont
-    // get sent back to the terminal
-    // TODO: fix this
-    main()?; // this is the issue but with the option above it doesnt work too
+    enable_raw_mode()?;
+    execute!(io::sdout(), EnterAlternateScreen)?;
+
+    // main()?;
     Ok(new_dir)
 }
