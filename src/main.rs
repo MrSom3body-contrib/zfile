@@ -138,10 +138,8 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."));
     // Re-enter TUI
-    // this works better than recursion because its faster and memory efficient.
-    enable_raw_mode()?;
-    execute!(io::sdout(), EnterAlternateScreen)?;
 
-    // main()?;
+    //i know its not the best solution but it works
+    main()?;
     Ok(new_dir)
 }
