@@ -185,8 +185,14 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."));
     // Re-enter TUI
-
     //i know its not the best solution but it works
     main()?;
     Ok(new_dir)
+}
+fn init_terminal() -> io::Result<Terminal<CrosstermBackend<io::Stdout>>> {
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen)?;
+    let backend = CrosstermBackend::new(stdout);
+    Terminal::new(backend)
 }
