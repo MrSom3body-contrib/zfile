@@ -30,7 +30,7 @@ fn main() -> Result<(), io::Error> {
     let mut terminal = Terminal::new(backend)?;
 
     //start in current dir
-    let mut current_directory = std::env::current_dir()?;
+    let mut current_directory: PathBuf = std::env::current_dir()?;
     // index of curretn selected file
     let mut selected_file = 0;
 
