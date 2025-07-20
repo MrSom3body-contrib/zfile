@@ -24,7 +24,6 @@ fn main() -> Result<(), io::Error> {
     //clearing the terminal and entrering a alternate screen
     //for debugging
     execute!(stdout, EnterAlternateScreen)?;
-    let backend = CrosstermBackend::new(stdout);
     //declaring the terminal
 
     let mut terminal = Some(init_terminal()?);
