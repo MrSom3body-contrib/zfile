@@ -31,6 +31,7 @@ fn main() -> Result<(), io::Error> {
 
     //start in current dir
     let mut current_directory: PathBuf = std::env::current_dir()?;
+    let root_dir: PathBuf = std::env::current_dir()?;
     // index of curretn selected file
     let mut selected_file = 0;
 
@@ -122,13 +123,23 @@ fn main() -> Result<(), io::Error> {
                         }
                     }
                     KeyCode::Char('J') => {
+                        //GOING TO THE LAST ELEMENT HOTKEY
                         if selected_file < get_entries(&current_directory).len().saturating_sub(1) {
                             selected_file = get_entries(&current_directory).len().saturating_sub(1);
                         }
                     }
+
                     KeyCode::Char('K') => {
+                        //GOING TO THE FIRST ELEMENT HOTKEY
                         if selected_file <= get_entries(&current_directory).len().saturating_sub(1)
                         {
+                            selected_file = 0;
+                        }
+                    }
+                    KeyCode::Char('H') => {
+                        //GOING TO ROOT HOTKEY
+                        while root_dir != current_directory {
+                            current_directory.pop();
                             selected_file = 0;
                         }
                     }
