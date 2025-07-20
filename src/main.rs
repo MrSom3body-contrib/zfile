@@ -30,7 +30,8 @@ fn main() -> Result<(), io::Error> {
     let mut terminal = Terminal::new(backend)?;
 
     //start in current dir
-    let mut current_directory: PathBuf = std::env::current_dir()?;
+    //let mut current_directory: PathBuf = std::env::current_dir()?;
+    let mut current_directory: PathBuf = path_helper()?;
     // index of curretn selected file
     let mut selected_file = 0;
 
@@ -177,5 +178,8 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
 
     //i know its not the best solution but it works
     main()?;
-    Ok(new_dir)
+    return Ok(new_dir);
+}
+fn path_helper() -> io::Result<PathBuf> {
+    return;
 }
