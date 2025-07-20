@@ -15,7 +15,6 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem},
 };
 //for getting the data from the file system
-static mut path_call_counter: u32 = 0;
 use std::{fs, io, path::PathBuf};
 
 fn main() -> Result<(), io::Error> {
@@ -31,8 +30,7 @@ fn main() -> Result<(), io::Error> {
     let mut terminal = Terminal::new(backend)?;
 
     //start in current dir
-    //let mut current_directory: PathBuf = std::env::current_dir()?;
-    let mut current_directory: PathBuf = path_helper(path_call_counter)?;
+    let mut current_directory: PathBuf = std::env::current_dir()?;
     // index of curretn selected file
     let mut selected_file = 0;
 
@@ -179,15 +177,5 @@ fn file_helper(path: &PathBuf) -> io::Result<PathBuf> {
 
     //i know its not the best solution but it works
     main()?;
-    return Ok(new_dir);
-}
-fn path_helper(counter: u32) -> io::Result<PathBuf> {
-    if counter == 0 {
-        return std::env::current_dir();
-    } else {
-        return path
-            .parent()
-            .map(Path::to_path_buf)
-            .unwrap_or_else(|| PathBuf::from("."));
-    }
+    Ok(new_dir)
 }
