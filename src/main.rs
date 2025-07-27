@@ -50,7 +50,7 @@ fn main() -> Result<(), io::Error> {
                 let display_split_vert = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
-                    .split(f.area()); // draw the ui components
+                    .split(main_split[1]); // draw the ui components
                 // declaring each item
                 let items: Vec<ListItem> = entries
                     .iter()
