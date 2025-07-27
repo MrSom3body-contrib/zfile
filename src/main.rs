@@ -41,7 +41,11 @@ fn main() -> Result<(), io::Error> {
 
         if let Some(ref mut term) = terminal {
             term.draw(|f| {
-                let display_split_vert = Layout::default()
+                let display_split_ver = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([Constraint::Percentage(10), Constraint::Percentage(90)])
+                    .split(f.area());
+                let display_split_hor = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
                     .split(f.area()); // draw the ui components
@@ -68,7 +72,7 @@ fn main() -> Result<(), io::Error> {
 
                 let mut list_state = ratatui::widgets::ListState::default();
                 list_state.select(Some(selected_file));
-                f.render_stateful_widget(ui_list, display_split_vert[0], &mut list_state);
+                f.render_stateful_widget(ui_list, display_split_hor[0], &mut list_state);
 
                 let preview_content = if let Some(entry) = entries.get(selected_file) {
                     if entry.is_file() {
@@ -85,7 +89,7 @@ fn main() -> Result<(), io::Error> {
                     .block(Block::default().title("Preview").borders(Borders::ALL))
                     .wrap(ratatui::widgets::Wrap { trim: true });
 
-                f.render_widget(preview, display_split_vert[1]);
+                f.render_widget(preview, display_split_hor[1]);
             })?;
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key) = event::read()? {
