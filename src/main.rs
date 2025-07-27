@@ -34,12 +34,22 @@ fn main() -> Result<(), io::Error> {
     // index of curretn selected file
     let mut selected_file = 0;
 
+    //fuzzy input
+    let fuzzy_input: String = String::new();
     //having a bug becuase the terminal is not clearing the screen before drawing and so it
     //conflichts with ui
     loop {
-        let entries = get_entries(&mut current_directory);
-        //fuzzy input
-        let fuzzy_input: String = String::new();
+        let entries: Vec<_> = get_entries(&mut current_directory)
+            .into_iter()
+            .filter(|e| {
+                let name = e
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_lowercase();
+                name.contains(&fuzzy_input.to_lowercase())
+            })
+            .collect();
 
         if let Some(ref mut term) = terminal {
             term.draw(|f| {
@@ -77,7 +87,7 @@ fn main() -> Result<(), io::Error> {
                             // 2025 is the year for cyan xd
                             .fg(Color::Cyan),
                     );
-                let fuzzy_paragraph = ratatui::widgets::Paragraph::new(search_input.as_ref())
+                let fuzzy_paragraph = ratatui::widgets::Paragraph::new(fuzzy_input.clone())
                     .block(Block::default().title("Search").borders(Borders::ALL));
                 f.render_widget(fuzzy_paragraph, main_split[0]);
 
