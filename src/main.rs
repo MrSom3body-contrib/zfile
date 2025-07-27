@@ -182,6 +182,10 @@ fn main() -> Result<(), io::Error> {
                                 selected_file = 0;
                             }
                         }
+                        //fuzzy search
+                        KeyCode::Char('f') => {}
+                        //escape the search
+                        KeyCode::Esc => {}
                         //dont need a hotkey for showing preview im gonna do it that it shows intantly
                         _ => {}
                     }
