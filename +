@@ -77,9 +77,7 @@ fn main() -> Result<(), io::Error> {
                             // 2025 is the year for cyan xd
                             .fg(Color::Cyan),
                     );
-                let fuzzy_paragraph = ratatui::widgets::Paragraph::new(search_input.as_ref())
-                    .block(Block::default().title("Search").borders(Borders::ALL));
-                f.render_widget(fuzzy_paragraph, main_split[0]);
+                let fuzzy_finder = ratatui::widgets::ListState::default(search_input.as_ref());
 
                 //rendering the list
                 let mut list_state = ratatui::widgets::ListState::default();
