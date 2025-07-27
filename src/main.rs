@@ -53,17 +53,17 @@ fn main() -> Result<(), io::Error> {
 
         if let Some(ref mut term) = terminal {
             term.draw(|f| {
-                //main split
-                let main_split = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints([Constraint::Length(3), Constraint::Min(0)])
-                    .split(f.area());
-
                 //explorer and preview split
                 let display_split_vert = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
-                    .split(main_split[1]); // draw the ui components
+                    .split(f.area()); // draw the ui components
+
+                //main split
+                let main_split = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([Constraint::Length(3), Constraint::Min(0)])
+                    .split(display_split_vert[1]);
 
                 // declaring each item
                 let items: Vec<ListItem> = entries
