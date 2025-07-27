@@ -38,9 +38,15 @@ fn main() -> Result<(), io::Error> {
     //conflichts with ui
     loop {
         let entries = get_entries(&mut current_directory);
+        //fuzzy input
+        let fuzzy_input: String = String::new();
 
         if let Some(ref mut term) = terminal {
             term.draw(|f| {
+                let main_split = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([Constraint::Length(3), Constraint::Min(0)])
+                    .split(f.area());
                 let display_split_vert = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
@@ -66,6 +72,7 @@ fn main() -> Result<(), io::Error> {
                             .fg(Color::Cyan),
                     );
 
+                //rendering the list
                 let mut list_state = ratatui::widgets::ListState::default();
                 list_state.select(Some(selected_file));
                 f.render_stateful_widget(ui_list, display_split_vert[0], &mut list_state);
