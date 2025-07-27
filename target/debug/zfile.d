@@ -1,1 +1,1 @@
-/home/julee/dev/learning-repo/zfile/target/debug/zfile: /home/julee/dev/learning-repo/zfile/src/main.rs
+/home/julee/dev/zfile/target/debug/zfile: /home/julee/dev/zfile/src/main.rs
