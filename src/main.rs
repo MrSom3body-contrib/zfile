@@ -72,6 +72,11 @@ fn main() -> Result<(), io::Error> {
                 let mut list_state = ratatui::widgets::ListState::default();
                 list_state.select(Some(selected_file));
                 f.render_stateful_widget(ui_list, display_split_hor[0], &mut list_state);
+
+                let fuzzy_list = ratatui::widgets::Paragraph::new(preview_content)
+                    .block(Block::default().title("Preview").borders(Borders::ALL))
+                    .wrap(ratatui::widgets::Wrap { trim: true });
+
                 f.render_stateful_widget(fuzzy_list, display_split_ver[0], &mut list_state);
 
                 let preview_content = if let Some(entry) = entries.get(selected_file) {
