@@ -43,14 +43,18 @@ fn main() -> Result<(), io::Error> {
 
         if let Some(ref mut term) = terminal {
             term.draw(|f| {
+                //main split
                 let main_split = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([Constraint::Length(3), Constraint::Min(0)])
                     .split(f.area());
+
+                //explorer and preview split
                 let display_split_vert = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
                     .split(main_split[1]); // draw the ui components
+
                 // declaring each item
                 let items: Vec<ListItem> = entries
                     .iter()
@@ -64,6 +68,8 @@ fn main() -> Result<(), io::Error> {
                         ListItem::new(display_name)
                     })
                     .collect();
+
+                //list of the files
                 let ui_list = List::new(items)
                     .block(Block::default().title("zfile").borders(Borders::ALL))
                     .highlight_style(
@@ -77,6 +83,7 @@ fn main() -> Result<(), io::Error> {
                 list_state.select(Some(selected_file));
                 f.render_stateful_widget(ui_list, display_split_vert[0], &mut list_state);
 
+                //rendering the preview
                 let preview_content = if let Some(entry) = entries.get(selected_file) {
                     if entry.is_file() {
                         fs::read_to_string(entry)
@@ -88,10 +95,12 @@ fn main() -> Result<(), io::Error> {
                     "".to_string()
                 };
 
+                // declaring the preview pane
                 let preview = ratatui::widgets::Paragraph::new(preview_content)
                     .block(Block::default().title("Preview").borders(Borders::ALL))
                     .wrap(ratatui::widgets::Wrap { trim: true });
 
+                //drawing the preview
                 f.render_widget(preview, display_split_vert[1]);
             })?;
             if event::poll(std::time::Duration::from_millis(100))? {
