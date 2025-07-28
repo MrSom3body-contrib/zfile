@@ -35,23 +35,23 @@ fn main() -> Result<(), io::Error> {
     let mut selected_file = 0;
 
     //fuzzy input
-    let fuzzy_input: String = String::new();
+    let fuzzy_input = String::new();
     let mut mode = "Normal";
     //having a bug becuase the terminal is not clearing the screen before drawing and so it
     //conflichts with ui
     loop {
-        let entries: Vec<_> = get_entries(&mut current_directory)
-            .into_iter()
-            .filter(|e| {
-                let name = e
-                    .file_name()
-                    .unwrap_or_default()
-                    .to_string_lossy()
-                    .to_lowercase();
-                name.contains(&fuzzy_input.to_lowercase())
-            })
-            .collect();
 
+let entries: Vec<_> = get_entries(&mut current_directory)
+    .into_iter()
+    .filter(|entry| {
+        let name = entry.file_name().unwrap_or_default().to_string_lossy().to_lowercase();
+        if mode == "Search" {
+            name.contains(fuzzy_input.to_lowercase())
+        } else {
+            true
+        }
+    })
+    .collect();
         if let Some(ref mut term) = terminal {
             term.draw(|f| {
                 //main split
@@ -187,6 +187,7 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Char('f') => {
                             mode = "Search";
                             selected_file = 0;
+                            search_helper();
                         }
                         //escape the search
                         KeyCode::Esc => {}
@@ -235,4 +236,7 @@ fn init_terminal() -> io::Result<Terminal<CrosstermBackend<io::Stdout>>> {
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     Terminal::new(backend)
+}
+fn search_helper() {
+    f
 }
