@@ -36,6 +36,7 @@ fn main() -> Result<(), io::Error> {
 
     //fuzzy input
     let fuzzy_input: String = String::new();
+    let mut mode = "Normal";
     //having a bug becuase the terminal is not clearing the screen before drawing and so it
     //conflichts with ui
     loop {
@@ -183,7 +184,10 @@ fn main() -> Result<(), io::Error> {
                             }
                         }
                         //fuzzy search
-                        KeyCode::Char('f') => {}
+                        KeyCode::Char('f') => {
+                            mode = "Search";
+                            selected_file = 0;
+                        }
                         //escape the search
                         KeyCode::Esc => {}
                         //dont need a hotkey for showing preview im gonna do it that it shows intantly
