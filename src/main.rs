@@ -178,6 +178,9 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Char('H') => {
                             //GOING TO ROOT HOTKEY
                             while root_dir != current_directory {
+                                if current_directory == root_dir.parent().unwrap() {
+                                    current_directory = root_dir.clone();
+                                }
                                 current_directory.pop();
                                 selected_file = 0;
                             }
