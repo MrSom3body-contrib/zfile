@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 ratatui = "0.29"
 crossterm = "0.27"
+fuzzy-matcher = "0.3"
