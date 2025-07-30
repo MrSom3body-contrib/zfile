@@ -168,7 +168,7 @@ fn main() -> Result<(), io::Error> {
                             in_search = true;
                             fuzzy_mode = true;
                         }
-                        KeyCode::Char('/') => {
+                        KeyCode::Char('s') => {
                             in_search = true;
                             fuzzy_mode = false;
                         }
@@ -183,8 +183,14 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Char(c) if in_search => {
                             // avoid stealing nav keys while searching by only handling in this arm
                             query.push(c);
+
                             selected_file = 0;
                         }
+                        KeyCode::Backspace if in_search => {
+                            query.pop();
+                            selected_file = 0;
+                        }
+
                         KeyCode::Char('ö') if in_search => {
                             // keep search results, exit typing mode
                             in_search = false;
