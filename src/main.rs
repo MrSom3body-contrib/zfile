@@ -165,8 +165,12 @@ fn main() -> Result<(), io::Error> {
                         // Enter search modes
                         KeyCode::Char('f') => {
                             // Enter/keep search mode and toggle fuzzy
-                            in_search = true;
-                            fuzzy_mode = true;
+                            if in_search == false {
+                                in_search = true;
+                                fuzzy_mode = true;
+                            } else {
+                                query.push('f');
+                            }
                         }
                         KeyCode::Char('s') => {
                             in_search = true;
