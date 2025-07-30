@@ -178,16 +178,14 @@ fn main() -> Result<(), io::Error> {
                             // leave search mode but keep the current filter
                             in_search = false;
                         }
-                        KeyCode::Backspace if in_search => {
-                            query.pop();
-                            selected_file = 0;
-                        }
+
+                        // While in search, capture typing and editing
                         KeyCode::Char(c) if in_search => {
                             // avoid stealing nav keys while searching by only handling in this arm
                             query.push(c);
                             selected_file = 0;
                         }
-                        KeyCode::Enter if in_search => {
+                        KeyCode::Char('ö') if in_search => {
                             // keep search results, exit typing mode
                             in_search = false;
                         }
