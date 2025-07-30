@@ -173,8 +173,12 @@ fn main() -> Result<(), io::Error> {
                             }
                         }
                         KeyCode::Char('s') => {
-                            in_search = true;
-                            fuzzy_mode = false;
+                            if in_search == false {
+                                in_search = true;
+                                fuzzy_mode = false;
+                            } else {
+                                query.push('f');
+                            }
                         }
 
                         // While in search, capture typing and editing
