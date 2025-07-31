@@ -11,5 +11,9 @@ fn delete_file(path: &PathBuf) -> io::Result<()> {
         fs::remove_file(path)
     }
 }
-fn copy_file() {}
-fn move_file() {}
+fn move_file(from: &PathBuf, to: &PathBuf) -> io::Result<()> {
+    let filename = from.file_name().unwrap();
+    let mut target = to.clone();
+    target.push(filename);
+    fs::rename(from, target)
+}
