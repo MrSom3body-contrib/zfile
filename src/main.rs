@@ -163,22 +163,14 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Char('q') => break,
 
                         // Enter search modes
-                        KeyCode::Char('f') => {
+                        KeyCode::Char('f') if !in_search => {
                             // Enter/keep search mode and toggle fuzzy
-                            if in_search == false {
-                                in_search = true;
-                                fuzzy_mode = true;
-                            } else {
-                                query.push('f');
-                            }
+                            in_search = true;
+                            fuzzy_mode = true;
                         }
-                        KeyCode::Char('s') => {
-                            if in_search == false {
-                                in_search = true;
-                                fuzzy_mode = false;
-                            } else {
-                                query.push('f');
-                            }
+                        KeyCode::Char('s') if !in_search => {
+                            in_search = true;
+                            fuzzy_mode = false;
                         }
 
                         // While in search, capture typing and editing
