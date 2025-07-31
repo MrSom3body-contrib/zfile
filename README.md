@@ -31,6 +31,6 @@ zfile is licensed under the MIT license.
 
 ## Credits
 
-its based on crossterm,ratatui
+its based on crossterm,ratatui and fuzzy-matcher
 
 [![Built With Ratatui](https://ratatui.rs/built-with-ratatui/badge.svg)](https://ratatui.rs/)
