@@ -250,6 +250,10 @@ fn main() -> Result<(), io::Error> {
                             }
                             selected_file = 0;
                         }
+                        //file manipulation
+                        KeyCode::Char('d') if !in_search => {}
+                        KeyCode::Char('r') if !in_search => {}
+                        KeyCode::Char('m') if !in_search => {}
 
                         _ => {}
                     }
