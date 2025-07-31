@@ -1,4 +1,5 @@
 // for handling the terminal with user input
+mod file_manipulation;
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
