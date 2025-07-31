@@ -129,7 +129,7 @@ fn main() -> Result<(), io::Error> {
                     .collect();
 
                 let ui_list = List::new(items)
-                    .block(Block::default().title("zfile").borders(Borders::ALL))
+                    .block(Block::default().title("files").borders(Borders::ALL))
                     .highlight_style(Style::default().fg(Color::Cyan));
 
                 let mut list_state = ratatui::widgets::ListState::default();
@@ -179,6 +179,10 @@ fn main() -> Result<(), io::Error> {
                             in_search = false;
                         }
 
+                        KeyCode::Enter if in_search => {
+                            // leave search mode but keep the current filter
+                            in_search = false;
+                        }
                         // While in search, capture typing and editing
                         KeyCode::Char(c) if in_search => {
                             // avoid stealing nav keys while searching by only handling in this arm
