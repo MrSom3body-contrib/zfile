@@ -42,6 +42,12 @@ fn main() -> Result<(), io::Error> {
     let mut in_search: bool = false;
     let mut fuzzy_mode: bool = false; // toggled by 'f'
 
+    //file manipulation
+    // let mut move_buffer: PathBuf = ;
+    let mut rename_buffer: String = String::new();
+    let mut in_rename: bool = false;
+    let mut in_move: bool = false;
+
     // reusable matcher
     let matcher = SkimMatcherV2::default();
 
@@ -259,7 +265,13 @@ fn main() -> Result<(), io::Error> {
                             }
                         }
                         KeyCode::Char('r') if !in_search => {}
-                        KeyCode::Char('m') if !in_search => {}
+                        KeyCode::Char('m') if !in_search => {
+                            if let Err(err) =
+                                file_manipulation::move_file(&entries[selected_file], move_buffer)
+                            {
+                                println!("Failed to delete file: {}", err);
+                            }
+                        }
 
                         _ => {}
                     }
