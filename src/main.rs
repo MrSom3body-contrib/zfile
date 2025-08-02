@@ -193,6 +193,14 @@ fn main() -> Result<(), io::Error> {
                             // leave search mode but keep the current filter
                             in_search = false;
                         }
+
+                        KeyCode::Char('ö') if in_search && !in_rename && !in_move => {
+                            // keep search results, exit typing mode
+                            selected_file = 0;
+                            in_search = false;
+                            #[allow(unused)]
+                            file_helper(&entries[selected_file]);
+                        }
                         // While in search, capture typing and editing
                         KeyCode::Char(c) if in_search && !in_rename && !in_move => {
                             // avoid stealing nav keys while searching by only handling in this arm
@@ -203,11 +211,6 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Backspace if in_search && !in_rename && !in_move => {
                             query.pop();
                             selected_file = 0;
-                        }
-
-                        KeyCode::Char('ö') if in_search && !in_rename && !in_move => {
-                            // keep search results, exit typing mode
-                            in_search = false;
                         }
 
                         // Navigation keys (only when NOT typing in the search bar)
