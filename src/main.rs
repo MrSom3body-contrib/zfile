@@ -47,6 +47,9 @@ fn main() -> Result<(), io::Error> {
     let mut rename_buffer: String = String::new();
     let mut in_rename: bool = false;
     let mut in_move: bool = false;
+    // double auth delete
+
+    let mut double_auth_delete = false;
 
     // reusable matcher
     let matcher = SkimMatcherV2::default();
@@ -170,69 +173,69 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Char('q') => break,
 
                         // Enter search modes
-                        KeyCode::Char('f') if !in_search => {
+                        KeyCode::Char('f') if !in_search && !in_rename && !in_move => {
                             // Enter/keep search mode and toggle fuzzy
                             in_search = true;
                             fuzzy_mode = true;
                         }
-                        KeyCode::Char('s') if !in_search => {
+                        KeyCode::Char('s') if !in_search && !in_rename && !in_move => {
                             in_search = true;
                             fuzzy_mode = false;
                         }
 
                         // While in search, capture typing and editing
-                        KeyCode::Esc if in_search => {
+                        KeyCode::Esc if in_search && !in_rename && !in_move => {
                             // leave search mode but keep the current filter
                             in_search = false;
                         }
 
-                        KeyCode::Enter if in_search => {
+                        KeyCode::Enter if in_search && !in_rename && !in_move => {
                             // leave search mode but keep the current filter
                             in_search = false;
                         }
                         // While in search, capture typing and editing
-                        KeyCode::Char(c) if in_search => {
+                        KeyCode::Char(c) if in_search && !in_rename && !in_move => {
                             // avoid stealing nav keys while searching by only handling in this arm
                             query.push(c);
 
                             selected_file = 0;
                         }
-                        KeyCode::Backspace if in_search => {
+                        KeyCode::Backspace if in_search && !in_rename && !in_move => {
                             query.pop();
                             selected_file = 0;
                         }
 
-                        KeyCode::Char('ö') if in_search => {
+                        KeyCode::Char('ö') if in_search && !in_rename && !in_move => {
                             // keep search results, exit typing mode
                             in_search = false;
                         }
 
                         // Navigation keys (only when NOT typing in the search bar)
-                        KeyCode::Char('j') if !in_search => {
+                        KeyCode::Char('j') if !in_search && !in_rename && !in_move => {
                             if !entries.is_empty()
                                 && selected_file < entries.len().saturating_sub(1)
                             {
                                 selected_file += 1;
                             }
                         }
-                        KeyCode::Char('k') if !in_search => {
+                        KeyCode::Char('k') if !in_search && !in_rename && !in_move => {
                             if selected_file > 0 {
                                 selected_file -= 1;
                             }
                         }
-                        KeyCode::Char('J') if !in_search => {
+                        KeyCode::Char('J') if !in_search && !in_rename && !in_move => {
                             if !entries.is_empty() {
                                 selected_file = entries.len().saturating_sub(1);
                             }
                         }
-                        KeyCode::Char('K') if !in_search => {
+                        KeyCode::Char('K') if !in_search && !in_rename && !in_move => {
                             selected_file = 0;
                         }
-                        KeyCode::Char('h') if !in_search => {
+                        KeyCode::Char('h') if !in_search && !in_rename && !in_move => {
                             current_directory.pop();
                             selected_file = 0;
                         }
-                        KeyCode::Char('l') if !in_search => {
+                        KeyCode::Char('l') if !in_search && !in_rename && !in_move => {
                             if let Some(pointer_to_file) = entries.get(selected_file) {
                                 if pointer_to_file.is_dir() {
                                     current_directory = pointer_to_file.clone();
@@ -249,7 +252,7 @@ fn main() -> Result<(), io::Error> {
                                 }
                             }
                         }
-                        KeyCode::Char('H') if !in_search => {
+                        KeyCode::Char('H') if !in_search && !in_rename && !in_move => {
                             // go to root_dir (fixed logic to avoid infinite loop)
                             while current_directory != root_dir {
                                 current_directory.pop();
@@ -258,10 +261,11 @@ fn main() -> Result<(), io::Error> {
                         }
                         //file manipulation
                         // DELETE
-                        KeyCode::Char('d') if !in_search => {
-                            if let Err(err) =
-                                file_manipulation::delete_file(&entries[selected_file])
-                            {
+                        KeyCode::Char('d') if !in_search && !in_rename && !in_move => {
+                            double_auth_delete = true;
+                        }
+                        KeyCode::Char('d') if double_auth_delete => {
+                            if let Err(err) = file_manipulation::delete_file(&current_directory) {
                                 println!("Failed to delete file: {}", err);
                             }
                         }
