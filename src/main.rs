@@ -251,7 +251,9 @@ fn main() -> Result<(), io::Error> {
                             selected_file = 0;
                         }
                         //file manipulation
-                        KeyCode::Char('d') if !in_search => {}
+                        KeyCode::Char('d') if !in_search => {
+                            file_manipulation::delete_file(&current_directory);
+                        }
                         KeyCode::Char('r') if !in_search => {}
                         KeyCode::Char('m') if !in_search => {}
 
