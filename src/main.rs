@@ -43,7 +43,7 @@ fn main() -> Result<(), io::Error> {
     let mut fuzzy_mode: bool = false; // toggled by 'f'
 
     //file manipulation
-    // let mut move_buffer: PathBuf = ;
+    let mut move_buffer: String = String::new();
     let mut rename_buffer: String = String::new();
     let mut in_rename: bool = false;
     let mut in_move: bool = false;
@@ -257,6 +257,7 @@ fn main() -> Result<(), io::Error> {
                             selected_file = 0;
                         }
                         //file manipulation
+                        // DELETE
                         KeyCode::Char('d') if !in_search => {
                             if let Err(err) =
                                 file_manipulation::delete_file(&entries[selected_file])
@@ -264,13 +265,17 @@ fn main() -> Result<(), io::Error> {
                                 println!("Failed to delete file: {}", err);
                             }
                         }
-                        KeyCode::Char('r') if !in_search => {}
-                        KeyCode::Char('m') if !in_search => {
-                            if let Err(err) =
-                                file_manipulation::move_file(&entries[selected_file], move_buffer)
-                            {
-                                println!("Failed to delete file: {}", err);
-                            }
+                        // MOVE
+                        KeyCode::Char('m') if !in_search => in_move = true,
+                        KeyCode::Char(c) if in_move => move_buffer.push(c),
+
+                        //RENAME
+                        KeyCode::Char(c) if in_rename && !in_search => {
+                            rename_buffer.push(c);
+                        }
+                        KeyCode::Char('r') if !in_search => in_rename = true,
+                        KeyCode::Char('ö') if in_rename && !in_search => {
+                            file_manipulation::rename_file(&entries[selected_file], &rename_buffer);
                         }
 
                         _ => {}

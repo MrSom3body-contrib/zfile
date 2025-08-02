@@ -1,7 +1,7 @@
 use std::fs;
 use std::io;
 use std::path::PathBuf;
-pub fn rename_file(from: &PathBuf, to: &PathBuf) -> io::Result<()> {
+pub fn rename_file(from: &PathBuf, to: &String) -> io::Result<()> {
     fs::rename(from, to)
 }
 pub fn delete_file(path: &PathBuf) -> io::Result<()> {
