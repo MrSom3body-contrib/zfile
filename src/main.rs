@@ -270,12 +270,15 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Char(c) if in_move => move_buffer.push(c),
 
                         //RENAME
+                        KeyCode::Char('r') if !in_search => in_rename = true,
+                        // While in rename, capture typing and editing
                         KeyCode::Char(c) if in_rename && !in_search => {
                             rename_buffer.push(c);
                         }
-                        KeyCode::Char('r') if !in_search => in_rename = true,
+                        // When leaving rename, rename the file
                         KeyCode::Char('ö') if in_rename && !in_search => {
-                            file_manipulation::rename_file(&entries[selected_file], &rename_buffer);
+                            #[allow(unused)]
+                            file_manipulation::rename_file(&entries[selected_file]);
                         }
 
                         _ => {}
