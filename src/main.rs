@@ -1,5 +1,5 @@
 // for handling the terminal with user input
-mod file_manipulation;
+pub mod file_manipulation;
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
@@ -252,7 +252,7 @@ fn main() -> Result<(), io::Error> {
                         }
                         //file manipulation
                         KeyCode::Char('d') if !in_search => {
-                            file_manipulation::delete_file(&current_directory);
+                            file_manipulation::delete_file(&entries[selected_file]);
                         }
                         KeyCode::Char('r') if !in_search => {}
                         KeyCode::Char('m') if !in_search => {}
