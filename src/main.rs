@@ -264,11 +264,19 @@ fn main() -> Result<(), io::Error> {
                         KeyCode::Char('d') if !in_search && !in_rename && !in_move => {
                             double_auth_delete = true;
                         }
-                        KeyCode::Char('d') if double_auth_delete => {
+                        KeyCode::Char('y') if double_auth_delete => {
                             if let Err(err) = file_manipulation::delete_file(&current_directory) {
                                 println!("Failed to delete file: {}", err);
                             }
                         }
+                        KeyCode::Char('n') if double_auth_delete => {
+                            if let Err(err) = file_manipulation::delete_file(&current_directory) {
+                                println!("Failed to delete file: {}", err);
+                            }
+
+                            double_auth_delete = false;
+                        }
+
                         // MOVE
                         KeyCode::Char('m') if !in_search => in_move = true,
                         KeyCode::Char(c) if in_move => move_buffer.push(c),
