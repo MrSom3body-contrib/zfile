@@ -21,6 +21,13 @@ use std::{fs, io, path::PathBuf};
 use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
 
+enum InputMode {
+    Normal,
+    Rename,
+    Move,
+    DeleteConfirm,
+}
+
 fn main() -> Result<(), io::Error> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -35,16 +42,14 @@ fn main() -> Result<(), io::Error> {
     let mut in_search: bool = false;
     let mut fuzzy_mode: bool = false;
 
-    let mut move_buffer: String = String::new();
-    let mut rename_buffer: String = String::new();
-    let mut in_rename: bool = false;
-    let mut in_move: bool = false;
-    let mut double_auth_delete = false;
+    let mut input_mode = InputMode::Normal;
+    let mut input_buffer = String::new();
 
     let matcher = SkimMatcherV2::default();
 
     loop {
         let mut entries_raw = get_entries(&current_directory);
+
         let entries: Vec<PathBuf> = if query.is_empty() {
             entries_raw
         } else if fuzzy_mode {
@@ -143,141 +148,89 @@ fn main() -> Result<(), io::Error> {
                 let preview = ratatui::widgets::Paragraph::new(preview_content)
                     .block(Block::default().title("Preview").borders(Borders::ALL))
                     .wrap(ratatui::widgets::Wrap { trim: true });
+
                 f.render_widget(preview, layout[1]);
             })?;
 
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key) = event::read()? {
-                    match key.code {
-                        KeyCode::Char('q') => break,
-
-                        KeyCode::Char('f') if !in_search && !in_rename && !in_move => {
-                            in_search = true;
-                            fuzzy_mode = true;
-                        }
-                        KeyCode::Char('s') if !in_search && !in_rename && !in_move => {
-                            in_search = true;
-                            fuzzy_mode = false;
-                        }
-                        KeyCode::Esc if in_search && !in_rename && !in_move => {
-                            in_search = false;
-                        }
-                        KeyCode::Enter if in_search && !in_rename && !in_move => {
-                            in_search = false;
-                        }
-                        KeyCode::Char('ö') if in_search && !in_rename && !in_move => {
-                            selected_file = 0;
-                            in_search = false;
-                            #[allow(unused)]
-                            file_helper(&entries[selected_file]);
-                        }
-                        KeyCode::Char(c) if in_search && !in_rename && !in_move => {
-                            query.push(c);
-                            selected_file = 0;
-                        }
-                        KeyCode::Backspace if in_search && !in_rename && !in_move => {
-                            query.pop();
-                            selected_file = 0;
-                        }
-                        KeyCode::Char('j') if !in_search && !in_rename && !in_move => {
-                            if !entries.is_empty()
-                                && selected_file < entries.len().saturating_sub(1)
-                            {
-                                selected_file += 1;
+                    match input_mode {
+                        InputMode::Normal => match key.code {
+                            KeyCode::Char('q') => break,
+                            KeyCode::Char('f') if !in_search => {
+                                in_search = true;
+                                fuzzy_mode = true;
                             }
-                        }
-                        KeyCode::Char('k')
-                            if selected_file > 0 && !in_search && !in_rename && !in_move =>
-                        {
-                            selected_file -= 1;
-                        }
-                        KeyCode::Char('J') if !in_search && !in_rename && !in_move => {
-                            if !entries.is_empty() {
-                                selected_file = entries.len().saturating_sub(1);
+                            KeyCode::Char('s') if !in_search => {
+                                in_search = true;
+                                fuzzy_mode = false;
                             }
-                        }
-                        KeyCode::Char('K') if !in_search && !in_rename && !in_move => {
-                            selected_file = 0;
-                        }
-                        KeyCode::Char('h') if !in_search && !in_rename && !in_move => {
-                            current_directory.pop();
-                            selected_file = 0;
-                        }
-                        KeyCode::Char('l') if !in_search && !in_rename && !in_move => {
-                            if let Some(pointer_to_file) = entries.get(selected_file) {
-                                if pointer_to_file.is_dir() {
-                                    current_directory = pointer_to_file.clone();
-                                    selected_file = 0;
-                                } else if pointer_to_file.is_file() {
-                                    if file_helper(&pointer_to_file).is_ok() {
-                                        terminal = Some(init_terminal()?);
-                                        current_directory = pointer_to_file
-                                            .parent()
-                                            .map(PathBuf::from)
-                                            .unwrap_or(current_directory.clone());
-                                        selected_file = 0;
+                            KeyCode::Char('r') if !entries.is_empty() => {
+                                input_mode = InputMode::Rename;
+                                input_buffer.clear();
+                            }
+                            KeyCode::Char('m') if !entries.is_empty() => {
+                                input_mode = InputMode::Move;
+                                input_buffer.clear();
+                            }
+                            KeyCode::Char('d') if !entries.is_empty() => {
+                                input_mode = InputMode::DeleteConfirm;
+                            }
+                            KeyCode::Char('j') => {
+                                if !entries.is_empty()
+                                    && selected_file < entries.len().saturating_sub(1)
+                                {
+                                    selected_file += 1;
+                                }
+                            }
+                            KeyCode::Char('k') => {
+                                if selected_file > 0 {
+                                    selected_file -= 1;
+                                }
+                            }
+                            _ => {}
+                        },
+                        InputMode::Rename | InputMode::Move => match key.code {
+                            KeyCode::Esc => {
+                                input_mode = InputMode::Normal;
+                                input_buffer.clear();
+                            }
+                            KeyCode::Backspace => {
+                                input_buffer.pop();
+                            }
+                            KeyCode::Char(c) => {
+                                input_buffer.push(c);
+                            }
+                            KeyCode::Enter => {
+                                if let Some(entry) = entries.get(selected_file) {
+                                    match input_mode {
+                                        InputMode::Rename => {
+                                            file_manipulation::rename_file(entry, &input_buffer)
+                                                .ok();
+                                        }
+                                        InputMode::Move => {
+                                            file_manipulation::move_file(entry, &input_buffer).ok();
+                                        }
+                                        _ => {}
                                     }
                                 }
+                                input_mode = InputMode::Normal;
+                                input_buffer.clear();
                             }
-                        }
-                        KeyCode::Char('H') if !in_search && !in_rename && !in_move => {
-                            while current_directory != root_dir {
-                                current_directory.pop();
-                            }
-                            selected_file = 0;
-                        }
-
-                        KeyCode::Char('d') if !in_search && !in_rename && !in_move => {
-                            double_auth_delete = true;
-                        }
-                        KeyCode::Char('y') if double_auth_delete => {
-                            if let Some(file) = entries.get(selected_file) {
-                                if let Err(err) = file_manipulation::delete_file(file) {
-                                    println!("Failed to delete file: {}", err);
+                            _ => {}
+                        },
+                        InputMode::DeleteConfirm => match key.code {
+                            KeyCode::Char('y') => {
+                                if let Some(entry) = entries.get(selected_file) {
+                                    file_manipulation::delete_file(entry).ok();
                                 }
+                                input_mode = InputMode::Normal;
                             }
-                            double_auth_delete = false;
-                        }
-                        KeyCode::Char('n') if double_auth_delete => {
-                            double_auth_delete = false;
-                        }
-
-                        KeyCode::Char('m') if !in_search && !in_rename => {
-                            in_move = true;
-                            move_buffer.clear();
-                        }
-                        KeyCode::Char(c) if in_move => {
-                            move_buffer.push(c);
-                        }
-                        KeyCode::Enter if in_move => {
-                            if let Some(file) = entries.get(selected_file) {
-                                if let Err(err) = file_manipulation::move_file(file, &move_buffer) {
-                                    println!("Failed to move file: {}", err);
-                                }
+                            KeyCode::Char('n') | KeyCode::Esc => {
+                                input_mode = InputMode::Normal;
                             }
-                            in_move = false;
-                            move_buffer.clear();
-                        }
-
-                        KeyCode::Char('r') if !in_search && !in_move => {
-                            in_rename = true;
-                            rename_buffer.clear();
-                        }
-                        KeyCode::Char(c) if in_rename => {
-                            rename_buffer.push(c);
-                        }
-                        KeyCode::Enter if in_rename => {
-                            if let Some(file) = entries.get(selected_file) {
-                                if let Err(err) =
-                                    file_manipulation::rename_file(file, &rename_buffer)
-                                {
-                                    println!("Failed to rename file: {}", err);
-                                }
-                            }
-                            in_rename = false;
-                            rename_buffer.clear();
-                        }
-                        _ => {}
+                            _ => {}
+                        },
                     }
                 }
             }
