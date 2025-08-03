@@ -21,6 +21,15 @@ use std::{fs, io, path::PathBuf};
 use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
 
+//file manipulatioin
+enum InputMode {
+    Normal,
+    Rename,
+    Move,
+    DeleteConfirm,
+    Create,
+}
+
 fn main() -> Result<(), io::Error> {
     // enabling raw mode
     enable_raw_mode()?;
@@ -44,6 +53,11 @@ fn main() -> Result<(), io::Error> {
 
     // reusable matcher
     let matcher = SkimMatcherV2::default();
+
+    // file manipulation
+    let mut input_mode = InputMode::Normal;
+    let mut input_buffer = String::new();
+    let mut pending_path: Option<PathBuf> = None; // stores selected file during operations
 
     loop {
         // gather and filter entries
