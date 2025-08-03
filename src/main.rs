@@ -22,6 +22,7 @@ use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
 
 //file manipulatioin
+#[derive(PartialEq)]
 enum InputMode {
     Normal,
     Rename,
@@ -55,9 +56,9 @@ fn main() -> Result<(), io::Error> {
     let matcher = SkimMatcherV2::default();
 
     // file manipulation
-    let mut input_mode = InputMode::Normal;
-    let mut input_buffer = String::new();
-    let mut pending_path: Option<PathBuf> = None; // stores selected file during operations
+    let input_mode = InputMode::Normal;
+    let input_buffer = String::new();
+    let pending_path: Option<PathBuf> = None; // stores selected file during operations
 
     loop {
         // gather and filter entries
@@ -169,6 +170,30 @@ fn main() -> Result<(), io::Error> {
                     .wrap(ratatui::widgets::Wrap { trim: true });
 
                 f.render_widget(preview, layout[1]);
+                if input_mode != InputMode::Normal {
+                    let area = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints([Constraint::Min(0), Constraint::Length(3)])
+                        .split(f.area());
+
+                    let (title, content) = match input_mode {
+                        InputMode::Rename => ("Rename to:", input_buffer.as_str()),
+                        InputMode::Move => ("Move to directory:", input_buffer.as_str()),
+                        InputMode::DeleteConfirm => (
+                            "Delete selected file? (y/n)",
+                            pending_path
+                                .as_ref()
+                                .and_then(|p| p.file_name())
+                                .map(|s| s.to_string_lossy().as_ref())
+                                .unwrap_or(""),
+                        ),
+                        _ => ("", ""),
+                    };
+
+                    let prompt = ratatui::widgets::Paragraph::new(content)
+                        .block(Block::default().title(title).borders(Borders::ALL));
+                    f.render_widget(prompt, area[1]);
+                }
             })?;
 
             if event::poll(std::time::Duration::from_millis(100))? {
