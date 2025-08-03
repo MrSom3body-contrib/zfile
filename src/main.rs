@@ -22,46 +22,29 @@ use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
 
 fn main() -> Result<(), io::Error> {
-    // enabling raw mode
     enable_raw_mode()?;
-    // declaring the standard output
     let mut stdout = io::stdout();
-    // entering an alternate screen
     execute!(stdout, EnterAlternateScreen)?;
-    // declaring the terminal
     let mut terminal = Some(init_terminal()?);
 
-    // start in current dir
     let mut current_directory: PathBuf = std::env::current_dir()?;
     let root_dir: PathBuf = current_directory.clone();
-    // index of currently selected file
     let mut selected_file: usize = 0;
 
-    // search state
     let mut query: String = String::new();
     let mut in_search: bool = false;
-    let mut fuzzy_mode: bool = false; // toggled by 'f'
+    let mut fuzzy_mode: bool = false;
 
-    //file manipulation
     let mut move_buffer: String = String::new();
     let mut rename_buffer: String = String::new();
     let mut in_rename: bool = false;
     let mut in_move: bool = false;
-    // double auth delete
-
     let mut double_auth_delete = false;
 
-    // reusable matcher
     let matcher = SkimMatcherV2::default();
 
     loop {
-        // gather and filter entries
         let mut entries_raw = get_entries(&current_directory);
-
-        // Apply filtering:
-        // - No query => show all
-        // - fuzzy_mode => keep items with a score, sort by score desc
-        // - normal mode => case-insensitive contains
         let entries: Vec<PathBuf> = if query.is_empty() {
             entries_raw
         } else if fuzzy_mode {
@@ -77,7 +60,6 @@ fn main() -> Result<(), io::Error> {
                     matcher.fuzzy_match(&name, &q).map(|score| (p, score))
                 })
                 .collect();
-            // higher score first
             scored.sort_by(|a, b| b.1.cmp(&a.1));
             scored.into_iter().map(|(p, _)| p).collect()
         } else {
@@ -94,7 +76,6 @@ fn main() -> Result<(), io::Error> {
                 .collect()
         };
 
-        // keep selection in range if list shrank
         if entries.is_empty() {
             selected_file = 0;
         } else if selected_file >= entries.len() {
@@ -162,19 +143,15 @@ fn main() -> Result<(), io::Error> {
                 let preview = ratatui::widgets::Paragraph::new(preview_content)
                     .block(Block::default().title("Preview").borders(Borders::ALL))
                     .wrap(ratatui::widgets::Wrap { trim: true });
-
                 f.render_widget(preview, layout[1]);
             })?;
 
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key) = event::read()? {
                     match key.code {
-                        // Quit
                         KeyCode::Char('q') => break,
 
-                        // Enter search modes
                         KeyCode::Char('f') if !in_search && !in_rename && !in_move => {
-                            // Enter/keep search mode and toggle fuzzy
                             in_search = true;
                             fuzzy_mode = true;
                         }
@@ -182,38 +159,26 @@ fn main() -> Result<(), io::Error> {
                             in_search = true;
                             fuzzy_mode = false;
                         }
-
-                        // While in search, capture typing and editing
                         KeyCode::Esc if in_search && !in_rename && !in_move => {
-                            // leave search mode but keep the current filter
                             in_search = false;
                         }
-
                         KeyCode::Enter if in_search && !in_rename && !in_move => {
-                            // leave search mode but keep the current filter
                             in_search = false;
                         }
-
                         KeyCode::Char('ö') if in_search && !in_rename && !in_move => {
-                            // keep search results, exit typing mode
                             selected_file = 0;
                             in_search = false;
                             #[allow(unused)]
                             file_helper(&entries[selected_file]);
                         }
-                        // While in search, capture typing and editing
                         KeyCode::Char(c) if in_search && !in_rename && !in_move => {
-                            // avoid stealing nav keys while searching by only handling in this arm
                             query.push(c);
-
                             selected_file = 0;
                         }
                         KeyCode::Backspace if in_search && !in_rename && !in_move => {
                             query.pop();
                             selected_file = 0;
                         }
-
-                        // Navigation keys (only when NOT typing in the search bar)
                         KeyCode::Char('j') if !in_search && !in_rename && !in_move => {
                             if !entries.is_empty()
                                 && selected_file < entries.len().saturating_sub(1)
@@ -221,10 +186,10 @@ fn main() -> Result<(), io::Error> {
                                 selected_file += 1;
                             }
                         }
-                        KeyCode::Char('k') if !in_search && !in_rename && !in_move => {
-                            if selected_file > 0 {
-                                selected_file -= 1;
-                            }
+                        KeyCode::Char('k')
+                            if selected_file > 0 && !in_search && !in_rename && !in_move =>
+                        {
+                            selected_file -= 1;
                         }
                         KeyCode::Char('J') if !in_search && !in_rename && !in_move => {
                             if !entries.is_empty() {
@@ -256,46 +221,62 @@ fn main() -> Result<(), io::Error> {
                             }
                         }
                         KeyCode::Char('H') if !in_search && !in_rename && !in_move => {
-                            // go to root_dir (fixed logic to avoid infinite loop)
                             while current_directory != root_dir {
                                 current_directory.pop();
                             }
                             selected_file = 0;
                         }
-                        //file manipulation
-                        // DELETE
+
                         KeyCode::Char('d') if !in_search && !in_rename && !in_move => {
                             double_auth_delete = true;
                         }
                         KeyCode::Char('y') if double_auth_delete => {
-                            if let Err(err) = file_manipulation::delete_file(&current_directory) {
-                                println!("Failed to delete file: {}", err);
+                            if let Some(file) = entries.get(selected_file) {
+                                if let Err(err) = file_manipulation::delete_file(file) {
+                                    println!("Failed to delete file: {}", err);
+                                }
                             }
+                            double_auth_delete = false;
                         }
                         KeyCode::Char('n') if double_auth_delete => {
-                            if let Err(err) = file_manipulation::delete_file(&current_directory) {
-                                println!("Failed to delete file: {}", err);
-                            }
-
                             double_auth_delete = false;
                         }
 
-                        // MOVE
-                        KeyCode::Char('m') if !in_search => in_move = true,
-                        KeyCode::Char(c) if in_move => move_buffer.push(c),
+                        KeyCode::Char('m') if !in_search && !in_rename => {
+                            in_move = true;
+                            move_buffer.clear();
+                        }
+                        KeyCode::Char(c) if in_move => {
+                            move_buffer.push(c);
+                        }
+                        KeyCode::Enter if in_move => {
+                            if let Some(file) = entries.get(selected_file) {
+                                if let Err(err) = file_manipulation::move_file(file, &move_buffer) {
+                                    println!("Failed to move file: {}", err);
+                                }
+                            }
+                            in_move = false;
+                            move_buffer.clear();
+                        }
 
-                        //RENAME
-                        KeyCode::Char('r') if !in_search => in_rename = true,
-                        // While in rename, capture typing and editing
-                        KeyCode::Char(c) if in_rename && !in_search => {
+                        KeyCode::Char('r') if !in_search && !in_move => {
+                            in_rename = true;
+                            rename_buffer.clear();
+                        }
+                        KeyCode::Char(c) if in_rename => {
                             rename_buffer.push(c);
                         }
-                        // When leaving rename, rename the file
-                        KeyCode::Char('ö') if in_rename && !in_search => {
-                            #[allow(unused)]
-                            file_manipulation::rename_file(&entries[selected_file]);
+                        KeyCode::Enter if in_rename => {
+                            if let Some(file) = entries.get(selected_file) {
+                                if let Err(err) =
+                                    file_manipulation::rename_file(file, &rename_buffer)
+                                {
+                                    println!("Failed to rename file: {}", err);
+                                }
+                            }
+                            in_rename = false;
+                            rename_buffer.clear();
                         }
-
                         _ => {}
                     }
                 }
@@ -303,15 +284,11 @@ fn main() -> Result<(), io::Error> {
         }
     }
 
-    // cleaning up so the terminal can be used again
     disable_raw_mode()?;
-    // leaving the alternate screen
     execute!(io::stdout(), LeaveAlternateScreen)?;
-    // exit cleanly
     std::process::exit(0);
 }
 
-// get the entries in the directory and returns it as a vector of paths
 fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
     fs::read_dir(path)
         .unwrap_or_else(|_| fs::read_dir(".").unwrap())
@@ -320,7 +297,6 @@ fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
         .collect()
 }
 
-// helper function for opening files with nvim and when closing nvim it returns to the parent directory
 #[allow(unused)]
 fn file_helper(path: &PathBuf) -> io::Result<()> {
     disable_raw_mode()?;
@@ -331,7 +307,7 @@ fn file_helper(path: &PathBuf) -> io::Result<()> {
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
-        .status()?; // Waits for nvim to exit;
+        .status()?;
     Ok(())
 }
 
