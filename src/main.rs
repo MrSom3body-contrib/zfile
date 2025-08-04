@@ -179,14 +179,6 @@ fn main() -> Result<(), io::Error> {
                     let (title, content) = match input_mode {
                         InputMode::Rename => ("Rename to:", input_buffer.as_str()),
                         InputMode::Move => ("Move to directory:", input_buffer.as_str()),
-                        InputMode::DeleteConfirm => (
-                            "Delete selected file? (y/n)",
-                            pending_path
-                                .as_ref()
-                                .and_then(|p| p.file_name())
-                                .map(|s| s.to_string_lossy().as_ref())
-                                .unwrap_or(""),
-                        ),
                         _ => ("", ""),
                     };
 
