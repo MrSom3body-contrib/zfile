@@ -1,5 +1,6 @@
 // for handling the terminal with user input
 mod file_manipulation;
+
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
@@ -12,7 +13,7 @@ use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
     style::{Color, Style},
-    widgets::{Block, Borders, List, ListItem},
+    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
 };
 // for getting the data from the file system
 use std::{fs, io, path::PathBuf};
@@ -96,7 +97,11 @@ fn main() -> Result<(), io::Error> {
 
                 let nav_column = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([Constraint::Length(3), Constraint::Min(0)])
+                    .constraints([
+                        Constraint::Length(3), // search bar
+                        Constraint::Min(0),    // file list
+                        Constraint::Length(1), // mode display
+                    ])
                     .split(layout[0]);
 
                 let title = if fuzzy_mode {
@@ -104,10 +109,10 @@ fn main() -> Result<(), io::Error> {
                 } else if in_search {
                     "Search: type to filter, Esc to exit"
                 } else {
-                    "Search (press 'f' for fuzzy, '/' for normal)"
+                    "Search (press 'f' for fuzzy, 's' for normal)"
                 };
 
-                let search_paragraph = ratatui::widgets::Paragraph::new(query.as_str())
+                let search_paragraph = Paragraph::new(query.as_str())
                     .block(Block::default().title(title).borders(Borders::ALL));
                 f.render_widget(search_paragraph, nav_column[0]);
 
@@ -125,7 +130,7 @@ fn main() -> Result<(), io::Error> {
                     .collect();
 
                 let ui_list = List::new(items)
-                    .block(Block::default().title("files").borders(Borders::ALL))
+                    .block(Block::default().title("Files").borders(Borders::ALL))
                     .highlight_style(Style::default().fg(Color::Cyan));
 
                 let mut list_state = ratatui::widgets::ListState::default();
@@ -133,6 +138,18 @@ fn main() -> Result<(), io::Error> {
                     list_state.select(Some(selected_file));
                 }
                 f.render_stateful_widget(ui_list, nav_column[1], &mut list_state);
+
+                // 🔽 Show current mode at bottom
+                let mode_text = match input_mode {
+                    InputMode::Normal => "Mode: Normal",
+                    InputMode::Rename => "Mode: Rename (Enter new name)",
+                    InputMode::Move => "Mode: Move (Enter target path)",
+                    InputMode::DeleteConfirm => "Mode: Delete (y/n)",
+                };
+
+                let mode_paragraph =
+                    Paragraph::new(mode_text).style(Style::default().fg(Color::Yellow));
+                f.render_widget(mode_paragraph, nav_column[2]);
 
                 let preview_content = if let Some(entry) = entries.get(selected_file) {
                     if entry.is_file() {
@@ -145,9 +162,9 @@ fn main() -> Result<(), io::Error> {
                     "".to_string()
                 };
 
-                let preview = ratatui::widgets::Paragraph::new(preview_content)
+                let preview = Paragraph::new(preview_content)
                     .block(Block::default().title("Preview").borders(Borders::ALL))
-                    .wrap(ratatui::widgets::Wrap { trim: true });
+                    .wrap(Wrap { trim: true });
 
                 f.render_widget(preview, layout[1]);
             })?;
