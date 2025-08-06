@@ -33,6 +33,11 @@ enum InputMode {
 }
 
 fn main() -> Result<(), io::Error> {
+    //------------------------------------------------------------------------------
+    //
+    //  INITIALIZATION
+    //
+    //------------------------------------------------------------------------------
     //entering an alternaate screen and enabling raw mode
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -63,8 +68,10 @@ fn main() -> Result<(), io::Error> {
 
     //the main loop that recursively runs until user presses 'q'
     loop {
+        //get the entries from the current directory but unfiltered
         let mut entries_raw = get_entries(&current_directory);
 
+        //filter the entries based on the query
         let entries: Vec<PathBuf> = if query.is_empty() {
             entries_raw
         } else if fuzzy_mode {
@@ -95,20 +102,32 @@ fn main() -> Result<(), io::Error> {
                 })
                 .collect()
         };
+        //------------------------------------------------------------------------------
 
+        //check if the list is empty
         if entries.is_empty() {
+            //i think its unnecessary to set the selected file to 0 because it will be set to the last entry and that is 0
             selected_file = 0;
         } else if selected_file >= entries.len() {
             selected_file = entries.len().saturating_sub(1);
         }
+        //------------------------------------------------------------------------------
+        //
+        //  DRAWING
+        //
+        //------------------------------------------------------------------------------
 
         if let Some(ref mut term) = terminal {
+            //draw the ui
             term.draw(|f| {
+                //split the screen into two columns
                 let layout = Layout::default()
                     .direction(Direction::Horizontal)
                     .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
+                    //f is the frame
                     .split(f.area());
 
+                //split the first column into two rows
                 let nav_column = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints([
@@ -118,10 +137,13 @@ fn main() -> Result<(), io::Error> {
                     ])
                     .split(layout[0]);
 
+                //the title of the search bar
                 let title = if fuzzy_mode {
                     "Search (Fuzzy): type to filter, Esc to exit"
+                    //if the search bar is active and the fuzzy search is unactive
                 } else if in_search {
                     "Search: type to filter, Esc to exit"
+                    //if the search bar is unactive
                 } else {
                     "Search (press 'f' for fuzzy, 's' for normal)"
                 };
