@@ -1,11 +1,13 @@
 // for handling the terminal with user input
 mod file_manipulation;
 
+// for input handling
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+// for standard input/output
 use std::process::{Command, Stdio};
 // for the ui components
 use ratatui::{
@@ -22,6 +24,7 @@ use std::{fs, io, path::PathBuf};
 use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
 
+// different modes like in nvim
 enum InputMode {
     Normal,
     Rename,
@@ -30,24 +33,35 @@ enum InputMode {
 }
 
 fn main() -> Result<(), io::Error> {
+    //entering an alternaate screen and enabling raw mode
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen)?;
     let mut terminal = Some(init_terminal()?);
 
+    //current directory
     let mut current_directory: PathBuf = std::env::current_dir()?;
+    //the directory from where the program starts
     let root_dir: PathBuf = current_directory.clone();
+    //the currently selected file
     let mut selected_file: usize = 0;
 
+    //the query string when searching through the files
     let mut query: String = String::new();
+    //if the search bar is active
     let mut in_search: bool = false;
+    //if the fuzzy search is active
     let mut fuzzy_mode: bool = false;
 
+    //the current mode of the program
     let mut input_mode = InputMode::Normal;
+    //the buffer for the input
     let mut input_buffer = String::new();
 
+    //for fuzzy matching
     let matcher = SkimMatcherV2::default();
 
+    //the main loop that recursively runs until user presses 'q'
     loop {
         let mut entries_raw = get_entries(&current_directory);
 

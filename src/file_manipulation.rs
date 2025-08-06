@@ -12,6 +12,7 @@ pub fn rename_file(old_path: &PathBuf, new_name: &str) -> io::Result<()> {
 }
 
 pub fn move_file(old_path: &PathBuf, new_path_str: &str) -> io::Result<()> {
+    // in work
     let new_path = PathBuf::from(new_path_str);
     if new_path.is_dir() {
         let file_name = old_path
