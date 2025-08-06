@@ -218,8 +218,11 @@ fn main() -> Result<(), io::Error> {
             //  EVENT HANDLING
             //
             //------------------------------------------------------------------------------
+            //all 100ms
             if event::poll(std::time::Duration::from_millis(100))? {
+                //when a event is received(key pressed)
                 if let Event::Key(key) = event::read()? {
+                    //swtich on the current mode
                     match input_mode {
                         InputMode::Normal => match key.code {
                             KeyCode::Esc => {
@@ -363,11 +366,19 @@ fn main() -> Result<(), io::Error> {
         }
     }
 
+    //------------------------------------------------------------------------------
+    //
+    //  CLEANUP
+    //
+    //  disable raw mode and exit the program
+    //
+    // -------------------------------------------------------------------------------
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen)?;
     std::process::exit(0);
 }
 
+//get the entries from the directory
 fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
     fs::read_dir(path)
         .unwrap_or_else(|_| fs::read_dir(".").unwrap())
@@ -376,6 +387,7 @@ fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
         .collect()
 }
 
+//open the file in nvim
 #[allow(unused)]
 fn file_helper(path: &PathBuf) -> io::Result<()> {
     disable_raw_mode()?;
@@ -390,6 +402,7 @@ fn file_helper(path: &PathBuf) -> io::Result<()> {
     Ok(())
 }
 
+//initialize the terminal
 fn init_terminal() -> io::Result<Terminal<CrosstermBackend<io::Stdout>>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
