@@ -1,3 +1,4 @@
+// for handling the terminal with user input
 mod file_manipulation;
 use crossterm::{
     event::{self, Event, KeyCode},
@@ -185,6 +186,37 @@ fn main() -> Result<(), io::Error> {
                             KeyCode::Char('k') => {
                                 if selected_file > 0 {
                                     selected_file -= 1;
+                                }
+                            }
+                            KeyCode::Char('J') => {
+                                selected_file = entries.len().saturating_sub(1);
+                            }
+                            KeyCode::Char('K') => {
+                                selected_file = 0;
+                            }
+                            KeyCode::Char('H') => {
+                                current_directory = root_dir.clone();
+                                selected_file = 0;
+                            }
+                            KeyCode::Char('h') => {
+                                current_directory.pop();
+                                selected_file = 0;
+                            }
+                            KeyCode::Char('l') => {
+                                if let Some(entry) = entries.get(selected_file) {
+                                    if entry.is_dir() {
+                                        current_directory = entry.clone();
+                                        selected_file = 0;
+                                    } else if entry.is_file() {
+                                        if file_helper(entry).is_ok() {
+                                            terminal = Some(init_terminal()?);
+                                            current_directory = entry
+                                                .parent()
+                                                .map(PathBuf::from)
+                                                .unwrap_or(current_directory.clone());
+                                            selected_file = 0;
+                                        }
+                                    }
                                 }
                             }
                             _ => {}
