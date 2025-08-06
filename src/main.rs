@@ -1,4 +1,3 @@
-// for handling the terminal with user input
 use crossterm::{
     event::{self, Event, KeyCode},
     execute,
@@ -20,53 +19,35 @@ use std::{fs, io, path::PathBuf};
 use fuzzy_matcher::FuzzyMatcher;
 use fuzzy_matcher::skim::SkimMatcherV2;
 
-//file manipulatioin
-#[derive(PartialEq)]
 enum InputMode {
     Normal,
     Rename,
     Move,
     DeleteConfirm,
-    Create,
 }
 
 fn main() -> Result<(), io::Error> {
-    // enabling raw mode
     enable_raw_mode()?;
-    // declaring the standard output
     let mut stdout = io::stdout();
-    // entering an alternate screen
     execute!(stdout, EnterAlternateScreen)?;
-    // declaring the terminal
     let mut terminal = Some(init_terminal()?);
 
-    // start in current dir
     let mut current_directory: PathBuf = std::env::current_dir()?;
     let root_dir: PathBuf = current_directory.clone();
-    // index of currently selected file
     let mut selected_file: usize = 0;
 
-    // search state
     let mut query: String = String::new();
     let mut in_search: bool = false;
-    let mut fuzzy_mode: bool = false; // toggled by 'f'
+    let mut fuzzy_mode: bool = false;
 
-    // reusable matcher
+    let mut input_mode = InputMode::Normal;
+    let mut input_buffer = String::new();
+
     let matcher = SkimMatcherV2::default();
 
-    // file manipulation
-    let input_mode = InputMode::Normal;
-    let input_buffer = String::new();
-    let pending_path: Option<PathBuf> = None; // stores selected file during operations
-
     loop {
-        // gather and filter entries
         let mut entries_raw = get_entries(&current_directory);
 
-        // Apply filtering:
-        // - No query => show all
-        // - fuzzy_mode => keep items with a score, sort by score desc
-        // - normal mode => case-insensitive contains
         let entries: Vec<PathBuf> = if query.is_empty() {
             entries_raw
         } else if fuzzy_mode {
@@ -82,7 +63,6 @@ fn main() -> Result<(), io::Error> {
                     matcher.fuzzy_match(&name, &q).map(|score| (p, score))
                 })
                 .collect();
-            // higher score first
             scored.sort_by(|a, b| b.1.cmp(&a.1));
             scored.into_iter().map(|(p, _)| p).collect()
         } else {
@@ -99,7 +79,6 @@ fn main() -> Result<(), io::Error> {
                 .collect()
         };
 
-        // keep selection in range if list shrank
         if entries.is_empty() {
             selected_file = 0;
         } else if selected_file >= entries.len() {
@@ -169,138 +148,98 @@ fn main() -> Result<(), io::Error> {
                     .wrap(ratatui::widgets::Wrap { trim: true });
 
                 f.render_widget(preview, layout[1]);
-                if input_mode != InputMode::Normal {
-                    let area = Layout::default()
-                        .direction(Direction::Vertical)
-                        .constraints([Constraint::Min(0), Constraint::Length(3)])
-                        .split(f.area());
-
-                    let (title, content) = match input_mode {
-                        InputMode::Rename => ("Rename to:", input_buffer.as_str()),
-                        InputMode::Move => ("Move to directory:", input_buffer.as_str()),
-                        _ => ("", ""),
-                    };
-
-                    let prompt = ratatui::widgets::Paragraph::new(content)
-                        .block(Block::default().title(title).borders(Borders::ALL));
-                    f.render_widget(prompt, area[1]);
-                }
             })?;
 
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key) = event::read()? {
-                    match key.code {
-                        // Quit
-                        KeyCode::Char('q') => break,
-
-                        // Enter search modes
-                        KeyCode::Char('f') if !in_search => {
-                            // Enter/keep search mode and toggle fuzzy
-                            in_search = true;
-                            fuzzy_mode = true;
-                        }
-                        KeyCode::Char('s') if !in_search => {
-                            in_search = true;
-                            fuzzy_mode = false;
-                        }
-
-                        // While in search, capture typing and editing
-                        KeyCode::Esc if in_search => {
-                            // leave search mode but keep the current filter
-                            in_search = false;
-                        }
-
-                        KeyCode::Enter if in_search => {
-                            // leave search mode but keep the current filter
-                            in_search = false;
-                        }
-                        // While in search, capture typing and editing
-                        KeyCode::Char(c) if in_search => {
-                            // avoid stealing nav keys while searching by only handling in this arm
-                            query.push(c);
-
-                            selected_file = 0;
-                        }
-                        KeyCode::Backspace if in_search => {
-                            query.pop();
-                            selected_file = 0;
-                        }
-
-                        KeyCode::Char('ö') if in_search => {
-                            // keep search results, exit typing mode
-                            in_search = false;
-                        }
-
-                        // Navigation keys (only when NOT typing in the search bar)
-                        KeyCode::Char('j') if !in_search => {
-                            if !entries.is_empty()
-                                && selected_file < entries.len().saturating_sub(1)
-                            {
-                                selected_file += 1;
+                    match input_mode {
+                        InputMode::Normal => match key.code {
+                            KeyCode::Char('q') => break,
+                            KeyCode::Char('f') if !in_search => {
+                                in_search = true;
+                                fuzzy_mode = true;
                             }
-                        }
-                        KeyCode::Char('k') if !in_search => {
-                            if selected_file > 0 {
-                                selected_file -= 1;
+                            KeyCode::Char('s') if !in_search => {
+                                in_search = true;
+                                fuzzy_mode = false;
                             }
-                        }
-                        KeyCode::Char('J') if !in_search => {
-                            if !entries.is_empty() {
-                                selected_file = entries.len().saturating_sub(1);
+                            KeyCode::Char('r') if !entries.is_empty() => {
+                                input_mode = InputMode::Rename;
+                                input_buffer.clear();
                             }
-                        }
-                        KeyCode::Char('K') if !in_search => {
-                            selected_file = 0;
-                        }
-                        KeyCode::Char('h') if !in_search => {
-                            current_directory.pop();
-                            selected_file = 0;
-                        }
-                        KeyCode::Char('l') if !in_search => {
-                            if let Some(pointer_to_file) = entries.get(selected_file) {
-                                if pointer_to_file.is_dir() {
-                                    current_directory = pointer_to_file.clone();
-                                    selected_file = 0;
-                                } else if pointer_to_file.is_file() {
-                                    if file_helper(&pointer_to_file).is_ok() {
-                                        terminal = Some(init_terminal()?);
-                                        current_directory = pointer_to_file
-                                            .parent()
-                                            .map(PathBuf::from)
-                                            .unwrap_or(current_directory.clone());
-                                        selected_file = 0;
-                                    }
+                            KeyCode::Char('m') if !entries.is_empty() => {
+                                input_mode = InputMode::Move;
+                                input_buffer.clear();
+                            }
+                            KeyCode::Char('d') if !entries.is_empty() => {
+                                input_mode = InputMode::DeleteConfirm;
+                            }
+                            KeyCode::Char('j') => {
+                                if !entries.is_empty()
+                                    && selected_file < entries.len().saturating_sub(1)
+                                {
+                                    selected_file += 1;
                                 }
                             }
-                        }
-                        KeyCode::Char('H') if !in_search => {
-                            // go to root_dir (fixed logic to avoid infinite loop)
-                            while current_directory != root_dir {
-                                current_directory.pop();
+                            KeyCode::Char('k') => {
+                                if selected_file > 0 {
+                                    selected_file -= 1;
+                                }
                             }
-                            selected_file = 0;
-                        }
-                        //file manipulation
-                        KeyCode::Char('d') if !in_search => {}
-                        KeyCode::Char('r') if !in_search => {}
-                        KeyCode::Char('m') if !in_search => {}
-
-                        _ => {}
+                            _ => {}
+                        },
+                        InputMode::Rename | InputMode::Move => match key.code {
+                            KeyCode::Esc => {
+                                input_mode = InputMode::Normal;
+                                input_buffer.clear();
+                            }
+                            KeyCode::Backspace => {
+                                input_buffer.pop();
+                            }
+                            KeyCode::Char(c) => {
+                                input_buffer.push(c);
+                            }
+                            KeyCode::Enter => {
+                                if let Some(entry) = entries.get(selected_file) {
+                                    match input_mode {
+                                        InputMode::Rename => {
+                                            file_manipulation::rename_file(entry, &input_buffer)
+                                                .ok();
+                                        }
+                                        InputMode::Move => {
+                                            file_manipulation::move_file(entry, &input_buffer).ok();
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                                input_mode = InputMode::Normal;
+                                input_buffer.clear();
+                            }
+                            _ => {}
+                        },
+                        InputMode::DeleteConfirm => match key.code {
+                            KeyCode::Char('y') => {
+                                if let Some(entry) = entries.get(selected_file) {
+                                    file_manipulation::delete_file(entry).ok();
+                                }
+                                input_mode = InputMode::Normal;
+                            }
+                            KeyCode::Char('n') | KeyCode::Esc => {
+                                input_mode = InputMode::Normal;
+                            }
+                            _ => {}
+                        },
                     }
                 }
             }
         }
     }
 
-    // cleaning up so the terminal can be used again
     disable_raw_mode()?;
-    // leaving the alternate screen
     execute!(io::stdout(), LeaveAlternateScreen)?;
-    // exit cleanly
     std::process::exit(0);
 }
 
-// get the entries in the directory and returns it as a vector of paths
 fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
     fs::read_dir(path)
         .unwrap_or_else(|_| fs::read_dir(".").unwrap())
@@ -309,7 +248,6 @@ fn get_entries(path: &PathBuf) -> Vec<PathBuf> {
         .collect()
 }
 
-// helper function for opening files with nvim and when closing nvim it returns to the parent directory
 #[allow(unused)]
 fn file_helper(path: &PathBuf) -> io::Result<()> {
     disable_raw_mode()?;
@@ -320,7 +258,7 @@ fn file_helper(path: &PathBuf) -> io::Result<()> {
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
-        .status()?; // Waits for nvim to exit;
+        .status()?;
     Ok(())
 }
 
