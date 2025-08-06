@@ -410,3 +410,5 @@ fn init_terminal() -> io::Result<Terminal<CrosstermBackend<io::Stdout>>> {
     let backend = CrosstermBackend::new(stdout);
     Terminal::new(backend)
 }
+//TODO:add a hotkey helper, color the different modes, when being in rename mode, show the string
+//actively being typed in the rendered frame
