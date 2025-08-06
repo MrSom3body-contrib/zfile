@@ -156,6 +156,35 @@ fn main() -> Result<(), io::Error> {
                 if let Event::Key(key) = event::read()? {
                     match input_mode {
                         InputMode::Normal => match key.code {
+                            KeyCode::Esc => {
+                                in_search = false;
+                                query.clear();
+                            }
+                            KeyCode::Backspace if in_search => {
+                                query.pop();
+                            }
+                            KeyCode::Enter if in_search => {
+                                if let Some(entry) = entries.get(selected_file) {
+                                    if entry.is_dir() {
+                                        current_directory = entry.clone();
+                                        selected_file = 0;
+                                    } else if entry.is_file() {
+                                        if file_helper(entry).is_ok() {
+                                            terminal = Some(init_terminal()?);
+                                            current_directory = entry
+                                                .parent()
+                                                .map(PathBuf::from)
+                                                .unwrap_or(current_directory.clone());
+                                            selected_file = 0;
+                                        }
+                                    }
+                                }
+                                query.clear();
+                                in_search = false;
+                            }
+                            KeyCode::Char(c) if in_search => {
+                                query.push(c);
+                            }
                             KeyCode::Char('q') => break,
                             KeyCode::Char('f') if !in_search => {
                                 in_search = true;
