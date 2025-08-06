@@ -148,10 +148,12 @@ fn main() -> Result<(), io::Error> {
                     "Search (press 'f' for fuzzy, 's' for normal)"
                 };
 
+                //render the search bar
                 let search_paragraph = Paragraph::new(query.as_str())
                     .block(Block::default().title(title).borders(Borders::ALL));
                 f.render_widget(search_paragraph, nav_column[0]);
 
+                //declare the items for the list
                 let items: Vec<ListItem> = entries
                     .iter()
                     .map(|entry| {
@@ -165,6 +167,7 @@ fn main() -> Result<(), io::Error> {
                     })
                     .collect();
 
+                //declaring a "frame" for the list where it can be rendered
                 let ui_list = List::new(items)
                     .block(Block::default().title("Files").borders(Borders::ALL))
                     .highlight_style(Style::default().fg(Color::Cyan));
@@ -173,9 +176,10 @@ fn main() -> Result<(), io::Error> {
                 if !entries.is_empty() {
                     list_state.select(Some(selected_file));
                 }
+                //render the list
                 f.render_stateful_widget(ui_list, nav_column[1], &mut list_state);
 
-                // 🔽 Show current mode at bottom
+                // Show current mode at bottom
                 let mode_text = match input_mode {
                     InputMode::Normal => "Mode: Normal",
                     InputMode::Rename => "Mode: Rename (Enter new name)",
@@ -183,10 +187,12 @@ fn main() -> Result<(), io::Error> {
                     InputMode::DeleteConfirm => "Mode: Delete (y/n)",
                 };
 
+                //render the mode text
                 let mode_paragraph =
                     Paragraph::new(mode_text).style(Style::default().fg(Color::Yellow));
                 f.render_widget(mode_paragraph, nav_column[2]);
 
+                //open the file for the preview
                 let preview_content = if let Some(entry) = entries.get(selected_file) {
                     if entry.is_file() {
                         fs::read_to_string(entry)
@@ -198,13 +204,20 @@ fn main() -> Result<(), io::Error> {
                     "".to_string()
                 };
 
+                //declaring a "frame" for the preview where it can be rendered
                 let preview = Paragraph::new(preview_content)
                     .block(Block::default().title("Preview").borders(Borders::ALL))
                     .wrap(Wrap { trim: true });
 
+                //render the preview
                 f.render_widget(preview, layout[1]);
             })?;
 
+            //------------------------------------------------------------------------------
+            //
+            //  EVENT HANDLING
+            //
+            //------------------------------------------------------------------------------
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key) = event::read()? {
                     match input_mode {
