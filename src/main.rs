@@ -133,7 +133,7 @@ fn main() -> Result<(), io::Error> {
                     .constraints([
                         Constraint::Length(3), // search bar
                         Constraint::Min(0),    // file list
-                        Constraint::Length(4), // mode display
+                        Constraint::Length(3), // mode display
                     ])
                     .split(layout[0]);
 
