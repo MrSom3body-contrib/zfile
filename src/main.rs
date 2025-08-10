@@ -275,6 +275,9 @@ fn main() -> Result<(), io::Error> {
                             KeyCode::Char('d') if !entries.is_empty() => {
                                 input_mode = InputMode::DeleteConfirm;
                             }
+                            KeyCode::Char('c') if !entries.is_empty() => {
+                                input_mode = InputMode::Create;
+                            }
                             KeyCode::Char('j') => {
                                 if !entries.is_empty()
                                     && selected_file < entries.len().saturating_sub(1)
