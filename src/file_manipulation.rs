@@ -2,6 +2,11 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
+pub fn create_file(parent: &PathBuf, name: &str) -> io::Result<()> {
+    let new_path = parent.join(name);
+    fs::File::create(new_path)?;
+    Ok(())
+}
 pub fn rename_file(old_path: &PathBuf, new_name: &str) -> io::Result<()> {
     let parent = old_path.parent().ok_or_else(|| {
         io::Error::new(io::ErrorKind::Other, "Could not determine parent directory")
