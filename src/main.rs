@@ -133,7 +133,7 @@ fn main() -> Result<(), io::Error> {
                     .constraints([
                         Constraint::Length(3), // search bar
                         Constraint::Min(0),    // file list
-                        Constraint::Length(2), // mode display
+                        Constraint::Length(4), // mode display
                     ])
                     .split(layout[0]);
 
@@ -178,19 +178,17 @@ fn main() -> Result<(), io::Error> {
                 //render the list
                 f.render_stateful_widget(ui_list, nav_column[1], &mut list_state);
 
-                // Show current mode at bottom
-                let mode_text = match input_mode {
-                    InputMode::Normal => "Mode: Normal",
-                    InputMode::Rename => "Mode: Rename (Enter new name)",
-                    InputMode::Move => "Mode: Move (Enter target path)",
-                    InputMode::DeleteConfirm => "Mode: Delete (y/n)",
+                let footer_text = match input_mode {
+                    InputMode::Normal => "NORMAL MODE".to_string(),
+                    InputMode::Rename => format!("RENAME: {}", input_buffer),
+                    InputMode::Move => format!("MOVE: {}", input_buffer),
+                    InputMode::DeleteConfirm => "DELETE? (y/n)".to_string(),
                 };
 
-                //render the mode text
-                let mode_paragraph =
-                    Paragraph::new(mode_text).style(Style::default().fg(Color::Yellow));
-                f.render_widget(mode_paragraph, nav_column[2]);
-
+                let footer = ratatui::widgets::Paragraph::new(footer_text)
+                    .style(Style::default().fg(Color::Yellow))
+                    .block(Block::default().borders(Borders::ALL));
+                f.render_widget(footer, nav_column[2]);
                 //open the file for the preview
                 let preview_content = if let Some(entry) = entries.get(selected_file) {
                     if entry.is_file() {
