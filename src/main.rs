@@ -153,6 +153,13 @@ fn main() -> Result<(), io::Error> {
                     .block(Block::default().title(title).borders(Borders::ALL));
                 f.render_widget(search_paragraph, nav_column[0]);
 
+                //footer for the mode
+                let footer = match input_mode {
+                    InputMode::Normal => "Mode: Normal",
+                    InputMode::Rename => "Mode: Rename (Enter new name)",
+                    InputMode::Move => "Mode: Move (Enter target path)",
+                    InputMode::DeleteConfirm => "Mode: Delete (y/n)",
+
                 //declare the items for the list
                 let items: Vec<ListItem> = entries
                     .iter()
