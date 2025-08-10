@@ -152,14 +152,6 @@ fn main() -> Result<(), io::Error> {
                 let search_paragraph = Paragraph::new(query.as_str())
                     .block(Block::default().title(title).borders(Borders::ALL));
                 f.render_widget(search_paragraph, nav_column[0]);
-
-                //footer for the mode
-                let footer = match input_mode {
-                    InputMode::Normal => "Mode: Normal",
-                    InputMode::Rename => "Mode: Rename (Enter new name)",
-                    InputMode::Move => "Mode: Move (Enter target path)",
-                    InputMode::DeleteConfirm => "Mode: Delete (y/n)",
-
                 //declare the items for the list
                 let items: Vec<ListItem> = entries
                     .iter()
@@ -198,6 +190,17 @@ fn main() -> Result<(), io::Error> {
                 let mode_paragraph =
                     Paragraph::new(mode_text).style(Style::default().fg(Color::Yellow));
                 f.render_widget(mode_paragraph, nav_column[2]);
+
+                //footer for the mode
+                let footer = match input_mode {
+                    InputMode::Normal => "Mode: Normal",
+                    InputMode::Rename => "Mode: Rename (Enter new name)",
+                    InputMode::Move => "Mode: Move (Enter target path)",
+                    InputMode::DeleteConfirm => "Mode: Delete (y/n)",
+                };
+                let footer = ratatui::widgets::Paragraph::new(footer)
+                    .block(Block::default().borders(Borders::ALL));
+                f.render_widget(footer, nav_column[2]);
 
                 //open the file for the preview
                 let preview_content = if let Some(entry) = entries.get(selected_file) {
