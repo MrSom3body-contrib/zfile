@@ -362,13 +362,7 @@ fn main() -> Result<(), io::Error> {
                             }
                             KeyCode::Enter => {
                                 if let Some(entry) = entries.get(selected_file) {
-                                    match input_mode {
-                                        InputMode::Create => {
-                                            file_manipulation::create_file(entry, &create_buffer)
-                                                .ok();
-                                        }
-                                        _ => {}
-                                    }
+                                    file_manipulation::create_file(entry, &create_buffer).ok();
                                 }
                                 input_mode = InputMode::Normal;
                                 create_buffer.clear();
