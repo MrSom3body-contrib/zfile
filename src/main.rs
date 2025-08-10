@@ -30,6 +30,7 @@ enum InputMode {
     Rename,
     Move,
     DeleteConfirm,
+    Create,
 }
 
 fn main() -> Result<(), io::Error> {
@@ -62,6 +63,8 @@ fn main() -> Result<(), io::Error> {
     let mut input_mode = InputMode::Normal;
     //the buffer for the input
     let mut input_buffer = String::new();
+    //the buffer when creating a new file
+    let mut create_buffer = String::new();
 
     //for fuzzy matching
     let matcher = SkimMatcherV2::default();
@@ -179,6 +182,7 @@ fn main() -> Result<(), io::Error> {
                 f.render_stateful_widget(ui_list, nav_column[1], &mut list_state);
 
                 let footer_text = match input_mode {
+                    InputMode::Create => format!("CREATE: {}", create_buffer),
                     InputMode::Normal => "NORMAL MODE".to_string(),
                     InputMode::Rename => format!("RENAME: {}", input_buffer),
                     InputMode::Move => format!("MOVE: {}", input_buffer),
@@ -342,6 +346,32 @@ fn main() -> Result<(), io::Error> {
                                 }
                                 input_mode = InputMode::Normal;
                                 input_buffer.clear();
+                            }
+                            _ => {}
+                        },
+                        InputMode::Create => match key.code {
+                            KeyCode::Esc => {
+                                input_mode = InputMode::Normal;
+                                create_buffer.clear();
+                            }
+                            KeyCode::Backspace => {
+                                create_buffer.pop();
+                            }
+                            KeyCode::Char(c) => {
+                                create_buffer.push(c);
+                            }
+                            KeyCode::Enter => {
+                                if let Some(entry) = entries.get(selected_file) {
+                                    match input_mode {
+                                        InputMode::Create => {
+                                            file_manipulation::create_file(entry, &create_buffer)
+                                                .ok();
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                                input_mode = InputMode::Normal;
+                                create_buffer.clear();
                             }
                             _ => {}
                         },
