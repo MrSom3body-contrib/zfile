@@ -379,7 +379,11 @@ fn main() -> Result<(), io::Error> {
                             KeyCode::Enter => {
                                 if let Some(entry) = entries.get(selected_file) {
                                     println!("{:?}", entry);
-                                    file_manipulation::create_file(entry, &create_buffer).ok();
+                                    file_manipulation::create_file(
+                                        &current_directory,
+                                        &create_buffer,
+                                    )
+                                    .ok();
                                 }
                                 input_mode = InputMode::Normal;
                                 create_buffer.clear();
