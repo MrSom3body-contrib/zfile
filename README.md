@@ -8,10 +8,10 @@ A simple file manager written in Rust. The aim of zfile is to be dead simple but
 - ~~using own motions to navigate (j, k, h, l), (J,K)~~
 - ~~fuzzy finder and normal search~~
 - ~~preview file~~ but not optimized yet (large files)
-- rename, delete, copy, move
+- ~~rename, delete, copy, move~~
 - sort by name, size, date
-- git branch history
-- picture preview
+- wont be done prob(git branch history)
+- wont be done prob(picture preview)
 
 ## Installation
 
