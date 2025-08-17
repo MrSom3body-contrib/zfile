@@ -180,15 +180,27 @@ fn main() -> Result<(), io::Error> {
                 }
                 //render the list
                 f.render_stateful_widget(ui_list, nav_column[1], &mut list_state);
-
-                let footer_text = match input_mode {
-                    InputMode::Create => format!("CREATE: {}", create_buffer),
-                    InputMode::Normal => "NORMAL MODE".to_string(),
-                    InputMode::Rename => format!("RENAME: {}", input_buffer),
-                    InputMode::Move => format!("MOVE: {}", input_buffer),
-                    InputMode::DeleteConfirm => "DELETE? (y/n)".to_string(),
+                // footer text + color per mode
+                let (footer_text, footer_style) = match input_mode {
+                    InputMode::Normal => {
+                        ("NORMAL MODE".to_string(), Style::default().fg(Color::White))
+                    }
+                    InputMode::Rename => (
+                        format!("RENAME: {}", input_buffer),
+                        Style::default().fg(Color::LightBlue),
+                    ),
+                    InputMode::Move => (
+                        format!("MOVE: {}", input_buffer),
+                        Style::default().fg(Color::Magenta),
+                    ),
+                    InputMode::DeleteConfirm => {
+                        ("DELETE? (y/n)".to_string(), Style::default().fg(Color::Red))
+                    }
+                    InputMode::Create => (
+                        format!("CREATE: {}", create_buffer),
+                        Style::default().fg(Color::Green),
+                    ),
                 };
-
                 let footer = ratatui::widgets::Paragraph::new(footer_text)
                     .style(Style::default().fg(Color::Yellow))
                     .block(Block::default().borders(Borders::ALL));
