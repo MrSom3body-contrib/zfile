@@ -201,8 +201,9 @@ fn main() -> Result<(), io::Error> {
                         Style::default().fg(Color::Green),
                     ),
                 };
+
                 let footer = ratatui::widgets::Paragraph::new(footer_text)
-                    .style(Style::default().fg(Color::Yellow))
+                    .style(footer_style)
                     .block(Block::default().borders(Borders::ALL));
                 f.render_widget(footer, nav_column[2]);
                 //open the file for the preview
